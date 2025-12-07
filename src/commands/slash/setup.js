@@ -18,10 +18,23 @@ module.exports = {
   async execute(interaction) {
     try {
       console.log(`[SETUP] Commande setup exécutée par ${interaction.user.tag} dans ${interaction.guild.name}`);
+      // Helper to safely reply or edit the deferred reply to avoid InteractionAlreadyReplied
+      async function safeReply(interaction, options) {
+        try {
+          if (interaction.deferred || interaction.replied) {
+            return await interaction.editReply(options);
+          } else {
+            return await interaction.reply(options);
+          }
+        } catch (err) {
+          // Fallback to followUp if editReply/reply fails (best-effort)
+          try { return await interaction.followUp(options); } catch (e) { return null; }
+        }
+      }
       
       if (!interaction.member.permissions.has(PermissionsBitField.Flags.ManageGuild)) {
         console.log(`[SETUP] Permission refusée pour ${interaction.user.tag}`);
-        return interaction.reply({
+        return safeReply(interaction, {
           content: '❌ You need the **Manage Server** permission to use this command.',
           ephemeral: true
         });
@@ -38,7 +51,7 @@ module.exports = {
 
       if (!category || category.type !== ChannelType.GuildCategory) {
         console.log(`[SETUP] ❌ Catégorie invalide`);
-        return interaction.reply({
+        return safeReply(interaction, {
           content: '❌ Please select a valid category for temporary voice channels.',
           ephemeral: true
         });
@@ -63,7 +76,7 @@ module.exports = {
         console.log(`[SETUP] ✅ Salon créé: ${createChannel.name} (${createChannel.id})`);
       } catch (error) {
         console.error(`[SETUP] ❌ Erreur création salon:`, error);
-        return interaction.reply({
+        return safeReply(interaction, {
           content: '❌ Failed to create voice channel. Please check bot permissions.',
           ephemeral: true
         });
@@ -79,16 +92,17 @@ module.exports = {
       const updatedConfig = await updateGuildConfig(guild.id, newConfig);
       console.log(`[SETUP] ✅ Config sauvegardée:`, updatedConfig);
 
-      await interaction.reply({
+      await safeReply(interaction, {
         content: `✅ **Setup Complete!**\n\n**Configuration:**\n• **Creation Channel:** <#${createChannel.id}>\n• **Category:** <#${category.id}>\n• **Channel Name:** ${createChannel.name}\n\nUsers can now join <#${createChannel.id}> to create temporary voice channels.`,
         ephemeral: true
       });
       
       console.log(`[SETUP] ✅ Setup terminé avec succès pour ${guild.name}`);
+      return; // Important: return après la réponse pour éviter les réponses multiples
       
     } catch (error) {
       console.error(`[SETUP] ❌ Erreur critique:`, error);
-      await interaction.reply({
+      await safeReply(interaction, {
         content: '❌ An unexpected error occurred. Please try again.',
         ephemeral: true
       }).catch(() => {});

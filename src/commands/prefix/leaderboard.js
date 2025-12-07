@@ -1,4 +1,18 @@
-const { EmbedBuilder } = require('discord.js');
+const { 
+  EmbedBuilder, 
+  PermissionFlagsBits,
+  TextDisplayBuilder,
+  ContainerBuilder,
+  MessageFlags,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  ModalBuilder,
+  TextInputBuilder,
+  TextInputStyle,
+  StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder
+} = require('discord.js');
 const { dataManager } = require('../../utils/dataManager');
 
 // Rôles autorisés

@@ -1,4 +1,21 @@
-const { EmbedBuilder } = require('discord.js');
+const { 
+  EmbedBuilder, 
+  ActionRowBuilder, 
+  ButtonBuilder, 
+  ButtonStyle,
+  ChannelType, 
+  PermissionFlagsBits,
+  TextDisplayBuilder,
+  ContainerBuilder,
+  MessageFlags,
+  StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder,
+  MediaGalleryBuilder,
+  MediaGalleryItemBuilder,
+  SectionBuilder,
+  SeparatorBuilder,
+  AttachmentBuilder
+} = require('discord.js');
 const { dataManager } = require('./dataManager');
 const { errorHandler } = require('./errorHandler');
 
@@ -9,69 +26,109 @@ const TASK_LEADERBOARD_CHANNEL_ID = '1395159806838444112';
 let leaderboardMessage = null;
 let leaderboardCheckInterval = null;
 
-// Fonction pour créer l'embed du leaderboard
-function createLeaderboardEmbed(taskData) {
+// Fonction pour créer les composants du leaderboard avec Discord Components V2
+function createLeaderboardComponents(taskData) {
     try {
         // Trier les utilisateurs par nombre de tâches (décroissant)
         const sortedUsers = Object.entries(taskData)
             .sort(([,a], [,b]) => b - a)
             .slice(0, 10); // Top 10 seulement
 
-        let description = '';
+        let leaderboardContent = '';
         let rank = 1;
 
         if (sortedUsers.length === 0) {
-            description = '📊 **Aucune tâche complétée pour le moment.**\n\nCommencez à utiliser `+task` pour apparaître dans le classement !';
+            leaderboardContent = '📊 **Aucune tâche complétée pour le moment.**\n\nCommencez à utiliser `+task` pour apparaître dans le classement !';
         } else {
             for (const [userId, taskCount] of sortedUsers) {
                 let medal = '';
-                if (rank === 1) medal = '🥇';
-                else if (rank === 2) medal = '🥈';
-                else if (rank === 3) medal = '🥉';
+                if (rank === 1) medal = `<:ones:1409235508202176552>`;
+                else if (rank === 2) medal = `<:twos:1409235464589672550>`;
+                else if (rank === 3) medal = `<:threes:1409235450463518732>`;
                 else medal = `**${rank}.**`;
 
-                description += `${medal} <@${userId}> - **${taskCount}** tâches\n`;
+                leaderboardContent += `${medal} <@${userId}> - **${taskCount}** tâches\n`;
                 rank++;
             }
         }
 
-        return new EmbedBuilder()
-            .setAuthor({ 
-                name: '🏆 Task Leaderboard', 
-                iconURL: 'https://cdn.discordapp.com/avatars/1395739396128378920/a_205db0dad201aa0645e8d9bffdac9a99.gif?size=1024'
-            })
-            .setTitle('📊 Classement des Staff')
-            .setDescription(description)
-            .setColor('#5865F2')
-            .addFields(
-                {
-                    name: '📈 Total des tâches',
-                    value: `**${Object.values(taskData).reduce((a, b) => a + b, 0)}** tâches complétées`,
-                    inline: true
-                },
-                {
-                    name: '👥 Staff participants',
-                    value: `**${Object.keys(taskData).length}** membres`,
-                    inline: true
-                },
-                {
-                    name: '⏰ Dernière mise à jour',
-                    value: new Date().toLocaleString('fr-FR', { 
-                        day: 'numeric', 
-                        month: 'long', 
-                        hour: '2-digit', 
-                        minute: '2-digit' 
-                    }),
-                    inline: true
-                }
-            )
-            .setFooter({ 
-                text: 'OneTab - Task Leaderboard • Mise à jour en temps réel', 
-                iconURL: 'https://cdn.discordapp.com/avatars/1395739396128378920/a_205db0dad201aa0645e8d9bffdac9a99.gif?size=1024'
-            })
-            .setTimestamp();
+        // Créer les composants TextDisplay pour Discord Components V2
+        const titleText = new TextDisplayBuilder()
+            .setContent(`# <:cropped_circle_image1:1414352260955242767>  Task Leaderboard`);
+
+        const leaderboardText = new TextDisplayBuilder()
+            .setContent(`<:maxright:1409235539214864465>  **Classement des Staff**\n\n${leaderboardContent}`);
+
+        const statsText = new TextDisplayBuilder()
+            .setContent(`### <:windows:1409235505928994836> Statistiques
+> **• Total des tâches:** **${Object.values(taskData).reduce((a, b) => a + b, 0)}** tâches complétées
+> **• Staff participants:** **${Object.keys(taskData).length}** membres
+> **• Dernière mise à jour:** ${new Date().toLocaleString('fr-FR', { 
+                day: 'numeric', 
+                month: 'long', 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            })}`);
+
+        // Footer supprimé selon la demande
+
+        // Bouton pour actualiser seulement la section
+        const controlRow = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+                .setCustomId('leaderboard_refresh')
+                .setLabel('🔄 Actualiser')
+                .setStyle(ButtonStyle.Primary)
+        );
+
+        // Galerie média avec l'image du leaderboard
+        const mediaGallery = new MediaGalleryBuilder()
+            .addItems(
+                mediaGalleryItem => mediaGalleryItem
+                    .setURL('https://cdn.discordapp.com/attachments/1406646913201209374/1415762392528191698/36113e3f191c49d87eadb6578216045b_gif_500203_pixels.gif')
+            );
+
+        // Section des statistiques sans thumbnail pour éviter les erreurs
+        const statsSection = new SectionBuilder()
+            .addTextDisplayComponents(statsText);
+
+        // Séparateur pour organiser le container
+        const separator = new SeparatorBuilder().setDivider(true);
+
+        // Section principale avec titre seulement
+        const mainSection = new SectionBuilder()
+            .addTextDisplayComponents(titleText);
+
+        // Section du classement avec thumbnail (comme le message de welcome)
+        const leaderboardSection = new SectionBuilder()
+            .addTextDisplayComponents(leaderboardText)
+            .setThumbnailAccessory(
+                thumbnail => thumbnail
+                    .setDescription('Task Leaderboard System')
+                    .setURL('https://cdn.discordapp.com/attachments/1406646913201209374/1414178170378125383/telechargement_2.gif')
+            );
+
+        // Container principal avec section du classement
+        const mainContainer = new ContainerBuilder()
+            .addTextDisplayComponents(titleText)
+            .addSeparatorComponents(separator)
+            .addSectionComponents(leaderboardSection)
+            .addSeparatorComponents(separator)
+            .addMediaGalleryComponents(mediaGallery)
+            .addSeparatorComponents(separator)
+            .addTextDisplayComponents(statsText)
+            .addActionRowComponents(controlRow);
+
+        // Créer l'attachment pour le thumbnail du leaderboard (comme le message de welcome)
+        const leaderboardThumbnailFile = new AttachmentBuilder('https://cdn.discordapp.com/attachments/1406646913201209374/1414178170378125383/telechargement_2.gif')
+            .setName('leaderboard_thumb.gif');
+
+        return {
+            mainContainer,
+            leaderboardThumbnailFile
+        };
+
     } catch (error) {
-        console.error('[LEADERBOARD] Error creating leaderboard embed:', error);
+        console.error('[LEADERBOARD] Error creating leaderboard components:', error);
         return null;
     }
 }
@@ -92,10 +149,10 @@ async function updateLeaderboard(guild) {
             return;
         }
 
-        // Créer l'embed du leaderboard
-        const leaderboardEmbed = createLeaderboardEmbed(taskData);
-        if (!leaderboardEmbed) {
-            console.error('[LEADERBOARD] Failed to create leaderboard embed');
+        // Créer les composants du leaderboard
+        const components = createLeaderboardComponents(taskData);
+        if (!components) {
+            console.error('[LEADERBOARD] Failed to create leaderboard components');
             return;
         }
 
@@ -105,7 +162,11 @@ async function updateLeaderboard(guild) {
                 // Vérifier si le message existe encore avant de le modifier
                 const fetchedMessage = await fetchMessageWithRetry(leaderboardMessage);
                 if (fetchedMessage) {
-                    await fetchedMessage.edit({ embeds: [leaderboardEmbed] });
+                    await fetchedMessage.edit({
+                        flags: MessageFlags.IsComponentsV2,
+                        components: [components.mainContainer],
+                        files: [components.leaderboardThumbnailFile]
+                    });
                     console.log('[LEADERBOARD] Leaderboard updated successfully');
                     return;
                 } else {
@@ -134,8 +195,12 @@ async function updateLeaderboard(guild) {
                     const messages = await leaderboardChannel.messages.fetch({ limit: 10 });
                     const oldLeaderboards = messages.filter(msg => 
                         msg.author.id === guild.client.user.id && 
-                        msg.embeds.length > 0 && 
-                        msg.embeds[0].title === '📊 Classement des Staff'
+                        msg.components && 
+                        msg.components.some(row => 
+                            row.components.some(component => 
+                                component.customId && component.customId.includes('leaderboard')
+                            )
+                        )
                     );
                     
                     if (oldLeaderboards.size > 0) {
@@ -147,7 +212,11 @@ async function updateLeaderboard(guild) {
                 }
 
                 // Créer le nouveau message avec retry
-                leaderboardMessage = await createMessageWithRetry(leaderboardChannel, { embeds: [leaderboardEmbed] });
+                leaderboardMessage = await createMessageWithRetry(leaderboardChannel, {
+                    flags: MessageFlags.IsComponentsV2,
+                    components: [components.mainContainer],
+                    files: [components.leaderboardThumbnailFile]
+                });
                 if (leaderboardMessage) {
                     console.log('[LEADERBOARD] New leaderboard message created');
                 } else {
@@ -189,7 +258,12 @@ async function initializeLeaderboard(guild) {
 async function checkLeaderboardMessage(guild) {
     try {
         if (!leaderboardMessage) {
-            console.log('[LEADERBOARD] No cached message, creating new one');
+            // Vérifier si le channel existe avant de créer le message
+            const channel = guild.channels.cache.get(TASK_LEADERBOARD_CHANNEL_ID);
+            if (!channel) {
+                console.log('[LEADERBOARD] Leaderboard channel not found:', TASK_LEADERBOARD_CHANNEL_ID);
+                return;
+            }
             await updateLeaderboard(guild);
             return;
         }
@@ -350,5 +424,6 @@ module.exports = {
     startLeaderboardMonitoring,
     stopLeaderboardMonitoring,
     checkLeaderboardMessage,
+    createLeaderboardComponents,
     TASK_LEADERBOARD_CHANNEL_ID
 }; 

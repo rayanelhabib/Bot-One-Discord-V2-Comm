@@ -1,5 +1,19 @@
 const { redis } = require('../../redisClient');
-const { EmbedBuilder } = require('discord.js');
+const { 
+  EmbedBuilder, 
+  PermissionFlagsBits,
+  TextDisplayBuilder,
+  ContainerBuilder,
+  MessageFlags,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  ModalBuilder,
+  TextInputBuilder,
+  TextInputStyle,
+  StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder
+} = require('discord.js');
 
 module.exports = {
   name: 'vcinfo',

@@ -1,4 +1,18 @@
-const { EmbedBuilder, PermissionFlagsBits } = require('discord.js');
+const { 
+  EmbedBuilder, 
+  PermissionFlagsBits,
+  TextDisplayBuilder,
+  ContainerBuilder,
+  MessageFlags,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  ModalBuilder,
+  TextInputBuilder,
+  TextInputStyle,
+  StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder
+} = require('discord.js');
 const { getGuildConfig } = require('../../utils/configManager');
 const { safeGet, safeSet, redisEnabled } = require('../../redisClient');
 
@@ -20,7 +34,24 @@ module.exports = {
                     .setDescription('Vous devez être dans un salon vocal pour utiliser cette commande.')
                     .setTimestamp();
                 
-                return message.reply({ embeds: [embed] });
+                
+      // === DISCORD COMPONENTS V2 PANEL ===
+      const titleText = new TextDisplayBuilder()
+        .setContent('# ℹ️ Information');
+        
+      const contentText = new TextDisplayBuilder()
+        .setContent(`> **No description**`);
+        
+      const footerText = new TextDisplayBuilder()
+        .setContent('OneTab - Voice management');
+
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(titleText, contentText, footerText);
+
+      return message.reply({
+        flags: MessageFlags.IsComponentsV2,
+        components: [container]
+      });
             }
 
             // Vérifier que c'est un salon temporaire créé par ce bot
@@ -31,7 +62,24 @@ module.exports = {
                     .setDescription('Cette fonctionnalité nécessite Redis qui n\'est pas disponible.')
                     .setTimestamp();
                 
-                return message.reply({ embeds: [embed] });
+                
+      // === DISCORD COMPONENTS V2 PANEL ===
+      const titleText = new TextDisplayBuilder()
+        .setContent('# ℹ️ Information');
+        
+      const contentText = new TextDisplayBuilder()
+        .setContent(`> **No description**`);
+        
+      const footerText = new TextDisplayBuilder()
+        .setContent('OneTab - Voice management');
+
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(titleText, contentText, footerText);
+
+      return message.reply({
+        flags: MessageFlags.IsComponentsV2,
+        components: [container]
+      });
             }
 
             const creatorId = await safeGet(`creator:${voiceChannel.id}`);
@@ -43,7 +91,24 @@ module.exports = {
                     .setDescription('Ce salon vocal n\'est pas un salon temporaire créé par ce bot.')
                     .setTimestamp();
                 
-                return message.reply({ embeds: [embed] });
+                
+      // === DISCORD COMPONENTS V2 PANEL ===
+      const titleText = new TextDisplayBuilder()
+        .setContent('# ℹ️ Information');
+        
+      const contentText = new TextDisplayBuilder()
+        .setContent(`> **No description**`);
+        
+      const footerText = new TextDisplayBuilder()
+        .setContent('OneTab - Voice management');
+
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(titleText, contentText, footerText);
+
+      return message.reply({
+        flags: MessageFlags.IsComponentsV2,
+        components: [container]
+      });
             }
 
             // Vérifier que l'utilisateur est le créateur du salon
@@ -54,7 +119,24 @@ module.exports = {
                     .setDescription('Seul le créateur du salon peut modifier l\'activité.')
                     .setTimestamp();
                 
-                return message.reply({ embeds: [embed] });
+                
+      // === DISCORD COMPONENTS V2 PANEL ===
+      const titleText = new TextDisplayBuilder()
+        .setContent('# ℹ️ Information');
+        
+      const contentText = new TextDisplayBuilder()
+        .setContent(`> **No description**`);
+        
+      const footerText = new TextDisplayBuilder()
+        .setContent('OneTab - Voice management');
+
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(titleText, contentText, footerText);
+
+      return message.reply({
+        flags: MessageFlags.IsComponentsV2,
+        components: [container]
+      });
             }
 
             // Vérifier les arguments
@@ -68,7 +150,24 @@ module.exports = {
                     )
                     .setTimestamp();
                 
-                return message.reply({ embeds: [embed] });
+                
+      // === DISCORD COMPONENTS V2 PANEL ===
+      const titleText = new TextDisplayBuilder()
+        .setContent('# ℹ️ Information');
+        
+      const contentText = new TextDisplayBuilder()
+        .setContent(`> **No description**`);
+        
+      const footerText = new TextDisplayBuilder()
+        .setContent('OneTab - Voice management');
+
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(titleText, contentText, footerText);
+
+      return message.reply({
+        flags: MessageFlags.IsComponentsV2,
+        components: [container]
+      });
             }
 
             const state = args[0].toLowerCase();
@@ -80,7 +179,24 @@ module.exports = {
                     .setDescription('L\'état doit être `on` ou `off`.')
                     .setTimestamp();
                 
-                return message.reply({ embeds: [embed] });
+                
+      // === DISCORD COMPONENTS V2 PANEL ===
+      const titleText = new TextDisplayBuilder()
+        .setContent('# ℹ️ Information');
+        
+      const contentText = new TextDisplayBuilder()
+        .setContent(`> **No description**`);
+        
+      const footerText = new TextDisplayBuilder()
+        .setContent('OneTab - Voice management');
+
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(titleText, contentText, footerText);
+
+      return message.reply({
+        flags: MessageFlags.IsComponentsV2,
+        components: [container]
+      });
             }
 
             // Mettre à jour l'état de l'activité

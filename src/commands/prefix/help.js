@@ -1,312 +1,74 @@
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType } = require('discord.js');
+const { 
+  EmbedBuilder, 
+  ActionRowBuilder, 
+  ButtonBuilder, 
+  ButtonStyle, 
+  ComponentType,
+  TextDisplayBuilder,
+  MessageFlags,
+  StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder,
+  SeparatorBuilder,
+  AttachmentBuilder,
+  SectionBuilder,
+  ThumbnailBuilder,
+  ContainerBuilder
+} = require('discord.js');
+const { detailPages } = require('../../utils/helpPages');
 
-// Emojis personnalisés ou centralisés (remplace les ID par les tiens si tu veux personnaliser)
-const EMOJI_VOICE = '🔊';
-const EMOJI_BLACKLIST = '⛔';
-const EMOJI_WHITELIST = '✅';
-const EMOJI_COOWNERS = '🤝';
-const EMOJI_ADD = '➕';
-const EMOJI_REMOVE = '➖';
-const EMOJI_LIST = '📋';
-const EMOJI_CLEAR = '🧹';
-const EMOJI_CHANNEL = '🔈';
-const EMOJI_LIMIT = '👥';
-const EMOJI_RESET = '♻️';
-const EMOJI_INFO = 'ℹ️';
-const EMOJI_OWNER = '👑';
-const EMOJI_LOCK = '🔒';
-const EMOJI_UNLOCK = '🔓';
-const EMOJI_RENAME = '📝';
-const EMOJI_SETTINGS = '⚙️';
-const EMOJI_MUTE = '🔇';
-const EMOJI_UNMUTE = '🔊';
-const EMOJI_HIDE = '🙈';
-const EMOJI_UNHIDE = '👁️';
-const EMOJI_PERMIT = '✅';
-const EMOJI_REJECT = '⛔';
-const EMOJI_PERMITROLE = '🟢';
-const EMOJI_REJECTROLE = '🔴';
-const EMOJI_TLOCK = '💬';
-const EMOJI_TUNLOCK = '💬';
-const EMOJI_REQUEST = '📩';
-const EMOJI_KICK = '👢';
-const EMOJI_FM = '🔇';
-const EMOJI_FUNM = '🔊';
-const EMOJI_CLAIM = '🏆';
-const EMOJI_TRANSFER = '👑';
-const EMOJI_FEATURES = '✨';
-const EMOJI_SETUP = '🛠️';
-const EMOJI_ADMIN = '🛡️';
-const EMOJI_LISTLINK = '🔗';
-const EMOJI_STATUS = '📝';
-const EMOJI_TASK = '📋';
-const EMOJI_CAM = '📷';
-const EMOJI_STREAM = '😤';
-const EMOJI_SB = '🔊';
-const EMOJI_ARROW = '➡️';
-
-// Pages de détail (créées une seule fois)
-const detailPages = {
-  commands: new EmbedBuilder()
-    .setAuthor({ 
-      name: '🔊 Late Night Voice Channel Commands', 
-      iconURL: 'https://cdn.discordapp.com/avatars/1395739396128378920/a_205db0dad201aa0645e8d9bffdac9a99.gif?size=1024'
-    })
-    .setThumbnail('https://cdn.discordapp.com/avatars/1395739396128378920/a_205db0dad201aa0645e8d9bffdac9a99.gif?size=1024')
-    .setColor(0x5865F2)
-    .setDescription([
-      '**Manage your temporary voice channels with ease!**',
-      '',
-      `${EMOJI_ARROW} __**Channel Management:**__`,
-      `${EMOJI_CHANNEL}  .v name <name>  — Rename your channel`,
-      `${EMOJI_LIMIT}  .v limit <number>  — Limit users`,
-      `${EMOJI_RESET}  .v reset  — Reset channel settings`,
-      `${EMOJI_INFO}  .v vcinfo  — Channel info`,
-      `${EMOJI_OWNER}  .v owner  — View owner`,
-      `${EMOJI_STATUS}  .v status [emoji] [text]  — Set channel status`,
-      `${EMOJI_CLEAR}  .v clear  — Kick all users`,
-      '',
-      `${EMOJI_ARROW} __**Access Control:**__`,
-      `${EMOJI_LOCK}  .v lock  — Lock channel`,
-      `${EMOJI_UNLOCK}  .v unlock  — Unlock channel`,
-      `${EMOJI_HIDE}  .v hide  — Hide channel (Premium)`,
-      `${EMOJI_UNHIDE}  .v unhide  — Unhide channel (Premium)`,
-      `${EMOJI_PERMIT}  .v permit @user  — Permit user`,
-      `${EMOJI_REJECT}  .v reject @user  — Reject user`,
-      `${EMOJI_PERMITROLE}  .v permitrole @role  — Permit role`,
-      `${EMOJI_REJECTROLE}  .v rejectrole @role  — Reject role`,
-      `${EMOJI_TLOCK}  .v tlock  — Lock chat`,
-      `${EMOJI_TUNLOCK}  .v tunlock  — Unlock chat`,
-      `${EMOJI_REQUEST}  .v request  — Request access`,
-      '',
-      `${EMOJI_ARROW} __**User Management:**__`,
-      `${EMOJI_KICK}  .v kick @user  — Kick user`,
-      `${EMOJI_FM}  .v fm  — Mute all`,
-      `${EMOJI_FUNM}  .v funm  — Unmute all`,
-      `${EMOJI_CLAIM}  .v claim  — Claim ownership`,
-      `${EMOJI_TRANSFER}  .v transfer @user  — Transfer ownership`,
-      `${EMOJI_TASK}  +task  — Start task timer(only for staff )`,
-      '',
-      '⚡ Use `.v help <command>` for more details on each command.'
-    ].join('\n'))
-    .setFooter({ text: 'OneTab - Voice management | Use .v help commands' }),
-  blacklist: new EmbedBuilder()
-    .setTitle(`${EMOJI_BLACKLIST} Blacklist System`)
-    .setThumbnail('https://cdn.discordapp.com/avatars/1395739396128378920/a_205db0dad201aa0645e8d9bffdac9a99.gif?size=1024')
-    .setColor(0xED4245)
-    .setDescription([
-      '**Block users from joining your voice channels!**',
-      '',
-      `${EMOJI_ADD}  .v blacklist add @user  or  .v bl add @user`,
-      '> Add a user to your blacklist (they will be blocked from your future VCs).',
-      '',
-      `${EMOJI_REMOVE}  .v blacklist remove @user  or  .v bl remove @user`,
-      '> Remove a user from your blacklist.',
-      '',
-      `${EMOJI_LIST}  .v blacklist list  or  .v bl list`,
-      '> View your blacklist.',
-      '',
-      `${EMOJI_CLEAR}  .v blacklist clear  or  .v bl clear`,
-      '> Clear your blacklist.',
-      '',
-      '⚠️ Blacklist applies to all temporary VCs you create.',
-      '',
-      '**💡 Tips:**',
-      '• Use blacklist to keep unwanted users out',
-      '• Combine with whitelist for maximum control',
-      '• Blacklist is server-wide for your channels'
-    ].join('\n'))
-    .setFooter({ text: 'OneTab - Voice management | Use .v blacklist or .v bl' }),
-  whitelist: new EmbedBuilder()
-    .setTitle(`${EMOJI_WHITELIST} Whitelist System`)
-    .setThumbnail('https://cdn.discordapp.com/avatars/1395739396128378920/a_205db0dad201aa0645e8d9bffdac9a99.gif?size=1024')
-    .setColor(0x57F287)
-    .setDescription([
-      '**Allow only trusted users to join your voice channels!**',
-      '',
-      `${EMOJI_ADD}  .v whitelist add @user  or  .v wl add @user`,
-      '> Add a user to your whitelist (they will always be able to join your VCs).',
-      '',
-      `${EMOJI_REMOVE}  .v whitelist remove @user  or  .v wl remove @user`,
-      '> Remove a user from your whitelist.',
-      '',
-      `${EMOJI_LIST}  .v whitelist list  or  .v wl list`,
-      '> View your whitelist.',
-      '',
-      `${EMOJI_CLEAR}  .v whitelist clear  or  .v wl clear`,
-      '> Clear your whitelist.',
-      '',
-      '⚠️ Whitelist applies to all temporary VCs you create.',
-      '',
-      '**💡 Tips:**',
-      '• Use whitelist for exclusive channels',
-      '• Perfect for private meetings or events',
-      '• Whitelist overrides blacklist for specific users'
-    ].join('\n'))
-    .setFooter({ text: 'OneTab - Voice management | Use .v whitelist or .v wl' }),
-  manager: new EmbedBuilder()
-    .setTitle(`${EMOJI_COOWNERS} Manager (Co-Owner) System`)
-    .setThumbnail('https://cdn.discordapp.com/avatars/1395739396128378920/a_205db0dad201aa0645e8d9bffdac9a99.gif?size=1024')
-    .setColor(0x5865F2)
-    .setDescription([
-      `**Easily share channel management with trusted users!**`,
-      '',
-      `${EMOJI_ADD}  .v manager add @user  or  .v manager add <ID>` +
-      '\n` .v man add @user ` or `.v man add <ID>`',
-      '> Add a user as manager (co-owner) of your voice channel.',
-      '',
-      `${EMOJI_REMOVE}  .v manager remove @user  or  .v manager remove <ID>` +
-      '\n` .v man remove @user ` or `.v man remove <ID>`',
-      '> Remove a user from your managers.',
-      '',
-      `${EMOJI_CLEAR}  .v manager clear  or  .v man clear`,
-      '> Remove all managers from your channel.',
-      '',
-      `${EMOJI_LIST}  .v manager show  or  .v man show`,
-      '> List all current managers (co-owners) of your channel.',
-      '',
-      '**Managers can:**',
-      '- Manage the channel (rename, limit, kick, mute, etc.)',
-      '- Help you moderate your voice room',
-      '- Use all voice commands except transfer ownership',
-      '',
-      '⚠️ Only the channel owner can manage the managers list.',
-      '',
-      '**💡 Tips:**',
-      '• Choose trusted friends as managers',
-      '• Managers can help moderate when you\'re away',
-      '• Perfect for team leaders and moderators'
-    ].join('\n'))
-    .setFooter({ text: 'OneTab - Voice management | Use .v manager or .v man' }),
-  features: new EmbedBuilder()
-    .setTitle(`${EMOJI_FEATURES} Voice Channel Features`)
-    .setThumbnail('https://cdn.discordapp.com/avatars/1395739396128378920/a_205db0dad201aa0645e8d9bffdac9a99.gif?size=1024')
-    .setColor(0xFEE75C)
-    .setDescription([
-      '**Enhance your voice experience with extra features!**',
-      '',
-      `${EMOJI_FEATURES}  .v activity on  — Enable activities`,
-      '> Watch Together, Poker Night, Chess, and more interactive activities.',
-      '',
-      `${EMOJI_CAM}  .v cam on  — Enable camera`,
-      '> Allow video sharing in your voice channel.',
-      '',
-      `${EMOJI_STREAM}  .v stream on  — Enable stream`,
-      '> Enable screen sharing and streaming capabilities.',
-      '',
-      `${EMOJI_SB}  .v sb on  — Enable soundboard`,
-      '> Play sound effects and music through the soundboard.',
-      '',
-      '**To disable any feature, use:**',
-      '`.v activity off`, `.v cam off`, `.v stream off`, `.v sb off`',
-      '',
-      '✨ Try these features in your voice channel!',
-      '',
-      '**💡 Tips:**',
-      '• Activities require 2+ users to work properly',
-      '• Some features may need specific permissions',
-      '• Great for gaming sessions and group activities'
-    ].join('\n'))
-    .setFooter({ text: 'OneTab - Voice management | Use .v help features' }),
-  setup: new EmbedBuilder()
-    .setTitle(`${EMOJI_SETUP} Setup Commands`)
-    .setThumbnail('https://cdn.discordapp.com/avatars/1395739396128378920/a_205db0dad201aa0645e8d9bffdac9a99.gif?size=1024')
-    .setColor(0x5865F2)
-    .setDescription([
-      '**Server administrators can configure the bot for your community.**',
-      '',
-      `${EMOJI_SETUP}  .v setup  — Start the setup process`,
-      '> Interactive setup wizard to configure voice channel creation.',
-      '',
-      '**Setup includes:**',
-      '- Voice channel creation settings',
-      '- Permission configurations',
-      '- Role assignments',
-      '- Channel naming patterns',
-      '',
-      '**Requirements:**',
-      '- Administrator permissions',
-      '- Manage channels permission',
-      '- Manage roles permission',
-      '',
-      '⚙️ More setup options coming soon!',
-      '',
-      '**💡 Tips:**',
-      '• Run setup in a dedicated admin channel',
-      '• Test the setup with a few users first',
-      '• Keep backup of your current settings'
-    ].join('\n'))
-    .setFooter({ text: 'OneTab - Voice management | Use .v help setup' }),
-  admin: new EmbedBuilder()
-    .setTitle(`${EMOJI_ADMIN} Admin Commands`)
-    .setThumbnail('https://cdn.discordapp.com/avatars/1395739396128378920/a_205db0dad201aa0645e8d9bffdac9a99.gif?size=1024')
-    .setColor(0xED4245)
-    .setDescription([
-      '**Reserved for server administrators.**',
-      '',
-      `${EMOJI_ADMIN}  .v admin  — Admin panel (coming soon)`,
-      '> Server-wide voice channel management and analytics.',
-      '',
-      '**Future admin features:**',
-      '- Server-wide voice channel overview',
-      '- User permission management',
-      '- Bot configuration settings',
-      '- Analytics and statistics',
-      '- Advanced moderation tools',
-      '',
-      '🔒 Only users with admin permissions can use these commands.',
-      '',
-      '**💡 Tips:**',
-      '• Admin panel will provide detailed server insights',
-      '• Monitor voice channel usage and activity',
-      '• Manage bot settings across the entire server'
-    ].join('\n'))
-    .setFooter({ text: 'OneTab - Voice management | Use .v help admin' }),
-  task: new EmbedBuilder()
-    .setTitle(`${EMOJI_TASK} Task System (Special Prefix)`)
-    .setThumbnail('https://cdn.discordapp.com/avatars/1395739396128378920/a_205db0dad201aa0645e8d9bffdac9a99.gif?size=1024')
-    .setColor(0x5865F2)
-    .setDescription([
-      '**Staff task management system for voice channel activities!**',
-      '',
-      '⚠️ **Note:** This command uses the special prefix `+` instead of `.v`',
-      '',
-      `${EMOJI_TASK}  +task  — Start task timer`,
-      '> Start a 20-minute timer when you have 5+ members in your VC.',
-      '',
-      `${EMOJI_TASK}  +task  — AUTOMATIC completion`,
-      '> Tasks are automatically counted after 20 minutes! No need to claim.',
-      '',
-      `${EMOJI_TASK}  +task list  — View task statistics`,
-      '> View all staff members and their completed tasks (High roles only).',
-      '',
-      `${EMOJI_TASK}  +task clear  — Reset task data`,
-      '> Clear all task data from the server (Owners only).',
-      '',
-      `${EMOJI_TASK}  +leaderboard  — View task leaderboard`,
-      '> View the top 10 staff members by completed tasks (High roles only).',
-      '',
-      '⚠️ **Requirements to start a task:**',
-      '• Must be in a voice channel',
-      '• Must have staff role',
-      '• Must be the channel creator',
-      '• Must have 5+ members in the channel',
-      '',
-      '⏰ **Process:**',
-      '1. Use `+task` to start the timer',
-      '2. Stay 20 minutes with 5+ members',
-      '3. ✅ **AUTOMATIC :** Task is automatically counted!',
-      '',
-      '**💡 Tips:**',
-      '• Perfect for staff activity tracking',
-      '• Great for community engagement',
-      '• Monitor staff performance and activity',
-      '• ✅ **Fully automatic** - no manual claiming needed!'
-    ].join('\n'))
-    .setFooter({ text: 'OneTab - Voice management | Use .v help task' })
+// ===== EMOJIS CENTRALISÉS =====
+const EMOJIS = {
+  // Catégories principales
+  VOICE: '🔊',
+  BLACKLIST: '⛔',
+  WHITELIST: '✅',
+  MANAGER: '🤝',
+  FEATURES: '✨',
+  SETUP: '🛠️',
+  ADMIN: '🛡️',
+  TASK: '📋',
+  
+  // Actions
+  ADD: '➕',
+  REMOVE: '➖',
+  LIST: '📋',
+  CLEAR: '🧹',
+  ARROW: '➡️',
+  
+  // Commandes
+  CHANNEL: '🔈',
+  LIMIT: '👥',
+  RESET: '♻️',
+  INFO: 'ℹ️',
+  OWNER: '👑',
+  LOCK: '🔒',
+  UNLOCK: '🔓',
+  RENAME: '📝',
+  SETTINGS: '⚙️',
+  MUTE: '🔇',
+  UNMUTE: '🔊',
+  HIDE: '🙈',
+  UNHIDE: '👁️',
+  PERMIT: '✅',
+  REJECT: '⛔',
+  PERMITROLE: '🟢',
+  REJECTROLE: '🔴',
+  TLOCK: '💬',
+  TUNLOCK: '💬',
+  REQUEST: '📩',
+  KICK: '👢',
+  FM: '🔇',
+  FUNM: '🔊',
+  CLAIM: '🏆',
+  TRANSFER: '👑',
+  STATUS: '📝',
+  CAM: '📷',
+  STREAM: '😤',
+  SB: '🔊',
+  LISTLINK: '🔗'
 };
 
-// Mapping des alias pour les sous-commandes
+// ===== MAPPING DES ALIAS =====
 const aliasMap = {
   commands: 'commands',
   bl: 'blacklist',
@@ -316,6 +78,7 @@ const aliasMap = {
   'co-owners': 'manager',
   coowners: 'manager',
   manager: 'manager',
+  man: 'manager',
   setup: 'setup',
   admin: 'admin',
   features: 'features',
@@ -324,82 +87,191 @@ const aliasMap = {
   leaderboard: 'leaderboard'
 };
 
+// ===== FONCTION PRINCIPALE =====
 module.exports = {
   name: 'help',
   description: 'Show help menu for voice channel commands',
-  usage: '.v help',
+  usage: '.v help [category]',
+  
   async execute(message, args, client) {
-    // Gestion des sous-commandes textuelles pour chaque catégorie (optimisée)
+    // Gestion des sous-commandes textuelles
     if (args[0]) {
       const key = args[0].toLowerCase();
-      const embedKey = aliasMap[key];
-      if (embedKey && detailPages[embedKey]) {
-        return message.reply({ embeds: [detailPages[embedKey]] });
+      const pageKey = aliasMap[key];
+      
+      if (pageKey && detailPages[pageKey]) {
+        const page = detailPages[pageKey];
+        
+        // === DISCORD COMPONENTS V2 RESPONSE (comme dans voiceStateUpdate.js) ===
+        // Thumbnail pour les pages de détail (URL directe)
+        
+        const titleText = new TextDisplayBuilder().setContent(`# ${page.title}`);
+        const contentText = new TextDisplayBuilder().setContent(page.content);
+        const footerText = new TextDisplayBuilder().setContent(page.footer);
+
+        // Section principale avec thumbnail (comme dans voiceStateUpdate.js)
+        const detailSection = new SectionBuilder()
+          .addTextDisplayComponents(titleText, contentText)
+          .setThumbnailAccessory(
+            thumbnail => thumbnail
+              .setDescription(`${page.title} - Help System`)
+              .setURL('https://cdn.discordapp.com/attachments/1406646913201209374/1414178170378125383/telechargement_2.gif')
+          );
+
+        const backButton = new ButtonBuilder()
+          .setCustomId('help_back_to_main')
+          .setLabel('← Back to Main Menu')
+          .setStyle(ButtonStyle.Secondary)
+          .setEmoji('🏠');
+
+        const separator = new SeparatorBuilder().setDivider(true);
+        const buttonActionRow = new ActionRowBuilder().addComponents(backButton);
+
+        // Container principal (comme dans voiceStateUpdate.js)
+        const detailContainer = new ContainerBuilder()
+          .addSectionComponents(detailSection)
+          .addTextDisplayComponents(footerText)
+          .addSeparatorComponents(separator)
+          .addActionRowComponents(buttonActionRow);
+
+        return message.channel.send({
+          flags: MessageFlags.IsComponentsV2,
+          components: [detailContainer]
+        });
       }
     }
 
-    // Boutons pour les différentes catégories (constante)
-    const row1 = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId('commands')
-        .setLabel('Commands')
-        .setStyle(ButtonStyle.Secondary)
-        .setEmoji('<:badge:1410413998335328318>'),
-      new ButtonBuilder()
-        .setCustomId('features')
-        .setLabel('Features')
-        .setStyle(ButtonStyle.Secondary)
-        .setEmoji('<:badge:1410413998335328318>'),
-      new ButtonBuilder()
-        .setCustomId('blacklist')
-        .setLabel('Blacklist')
-        .setStyle(ButtonStyle.Secondary)
-        .setEmoji('<:badge:1410413998335328318>'),
-      new ButtonBuilder()
-        .setCustomId('whitelist')
-        .setLabel('Whitelist')
-        .setStyle(ButtonStyle.Secondary)
-        .setEmoji('<:badge:1410413998335328318>')
+    // === PANEL PRINCIPAL HELP (DISCORD COMPONENTS V2) ===
+    const serverName = message.guild.name;
+    
+    // Thumbnail pour le message help principal (URL directe)
+    
+    // --- Main Help Components (comme dans voiceStateUpdate.js) ---
+    const titleText = new TextDisplayBuilder().setContent(`# <:cropped_circle_image:1414200758877950054>  ${serverName} Help Commands`);
+
+    const descriptionText = new TextDisplayBuilder().setContent(
+      `> **🎤 Welcome to Sorane OneTab Voice Management System!**
+> **•  Create instant temporary voice channels with advanced controls**
+> **•  Share management with trusted users and block unwanted guests**
+
+**My Prefix:** \`.v\``
     );
 
+    const footerText = new TextDisplayBuilder().setContent(`OneTab - Voice management | Use the menu below to navigate`);
 
+    // Section principale avec thumbnail (comme dans voiceStateUpdate.js)
+    const mainSection = new SectionBuilder()
+      .addTextDisplayComponents(titleText, descriptionText)
+      .setThumbnailAccessory(
+        thumbnail => thumbnail
+          .setDescription('Help System - Voice Management')
+          .setURL('https://cdn.discordapp.com/attachments/1406646913201209374/1414178170378125383/telechargement_2.gif')
+      );
 
-    // Embed principal (constante)
-    const serverName = message.guild.name;
-    const mainEmbed = new EmbedBuilder()
-      .setAuthor({ 
-        name: 'Help Commands | Late Night Community', 
-        iconURL: 'https://cdn.discordapp.com/avatars/1395739396128378920/a_205db0dad201aa0645e8d9bffdac9a99.gif?size=1024'
-      })
-      .setThumbnail('https://cdn.discordapp.com/avatars/1395739396128378920/a_205db0dad201aa0645e8d9bffdac9a99.gif?size=1024')
-      .setDescription(
-        `**We are thrilled to introduce our latest addition to the server, Serinas**\n\n` +
-        `> My Prefix : .v\n\n` +
-        `${EMOJI_VOICE} **・Voice Commands**\n` +
-        '<:badge:1410413998335328318> ` .v help commands `\n\n' +
-        `${EMOJI_BLACKLIST} **・BlackList Commands**\n` +
-        '<:badge:1410413998335328318> ` .v help bl `\n\n' +
-        `${EMOJI_WHITELIST} **・Whitelist Commands**\n` +
-        '<:badge:1410413998335328318> ` .v help wl `\n\n' +
-        `${EMOJI_COOWNERS} **・Manager (Co-Owner) Commands**\n` +
-        '<:badge:1410413998335328318> ` .v help manager `\n\n' +
-        `${EMOJI_TASK} **・Task System (Special Prefix)**\n` +
-        '<:badge:1410413998335328318> ` +task ` \n\n' +
-        `**Use:** \` .v help setup \` To See Setup Commands\n\n` +
-        `**Use:** \` .v help admin \` To See Admin Commands\n\n` +
-        `**Use:** \` .v help features \` To See Voice Features\n\n` +
-        `${EMOJI_LISTLINK} **Links:** [Support](your_link) | [InviteBot](your_link) | [Vote](your_link)`
-      )
-      .setColor('#5865F2')
-      .setFooter({ text: 'OneTab - Voice management' });
+    // --- Interactive Components ---
+    const selectMenuOptions = [
+      {
+        label: 'Voice Commands',
+        description: 'All voice channel management commands',
+        value: 'voice',
+        emoji: EMOJIS.VOICE
+      },
+      {
+        label: 'Blacklist System',
+        description: 'Block users from your voice channels',
+        value: 'blacklist',
+        emoji: EMOJIS.BLACKLIST
+      },
+      {
+        label: 'Whitelist System',
+        description: 'Allow only trusted users',
+        value: 'whitelist',
+        emoji: EMOJIS.WHITELIST
+      },
+      {
+        label: 'Manager System',
+        description: 'Share channel management with trusted users',
+        value: 'manager',
+        emoji: EMOJIS.MANAGER
+      },
+      {
+        label: 'Voice Features',
+        description: 'Enable activities, camera, soundboard, etc.',
+        value: 'features',
+        emoji: EMOJIS.FEATURES
+      },
+      {
+        label: 'Setup Commands',
+        description: 'Server administrator configuration',
+        value: 'setup',
+        emoji: EMOJIS.SETUP
+      },
+      {
+        label: 'Admin Commands',
+        description: 'Server-wide management tools',
+        value: 'admin',
+        emoji: EMOJIS.ADMIN
+      },
+      {
+        label: 'Task System',
+        description: 'Staff task management system',
+        value: 'task',
+        emoji: EMOJIS.TASK
+      }
+    ];
 
-    await message.reply({
-      embeds: [mainEmbed],
-      components: [row1]
-    }).then(reply => {
-      // Création du collector pour les boutons
-      const collector = reply.createMessageComponentCollector({
-        componentType: ComponentType.Button,
+    const selectMenu = new StringSelectMenuBuilder()
+      .setCustomId('help-category-select')
+      .setPlaceholder('🔍 Choose a help category')
+      .addOptions(selectMenuOptions.map(option => 
+      new StringSelectMenuOptionBuilder()
+          .setLabel(option.label)
+          .setValue(option.value)
+          .setDescription(option.description)
+          .setEmoji(option.emoji)
+      ));
+
+    const supportButton = new ButtonBuilder()
+      .setLabel('Support Server')
+      .setStyle(ButtonStyle.Link)
+      .setURL('https://discord.gg/wyWGcKWssQ');
+
+    const inviteButton = new ButtonBuilder()
+      .setLabel('Invite Bot')
+      .setStyle(ButtonStyle.Link)
+      .setURL('https://discord.gg/wyWGcKWssQ');
+
+    const voteButton = new ButtonBuilder()
+      .setLabel('Vote')
+      .setStyle(ButtonStyle.Link)
+      .setURL('https://discord.gg/wyWGcKWssQ');
+
+    const separator = new SeparatorBuilder().setDivider(true);
+    
+    const menuActionRow = new ActionRowBuilder().addComponents(selectMenu);
+    const buttonActionRow = new ActionRowBuilder().addComponents(supportButton, inviteButton, voteButton);
+
+    // === MESSAGE HELP PRINCIPAL AVEC DISCORD COMPONENTS V2 ===
+    // Test si Discord Components V2 est supporté
+    const isComponentsV2Supported = typeof MessageFlags.IsComponentsV2 !== 'undefined';
+    
+    if (isComponentsV2Supported) {
+      try {
+        // Container principal (comme dans voiceStateUpdate.js)
+        const mainContainer = new ContainerBuilder()
+          .addSectionComponents(mainSection)
+          .addSeparatorComponents(separator)
+          .addTextDisplayComponents(footerText)
+          .addSeparatorComponents(separator)
+          .addActionRowComponents(menuActionRow, buttonActionRow);
+
+        const sentMessage = await message.channel.send({
+          flags: MessageFlags.IsComponentsV2,
+          components: [mainContainer]
+        });
+        
+      // Création du collector pour les boutons et menus
+        const collector = sentMessage.createMessageComponentCollector({
         time: 300_000 // 5 minutes
       });
 
@@ -411,14 +283,152 @@ module.exports = {
           });
         }
 
-        const page = detailPages[interaction.customId];
+        // Gestion des boutons d'action rapide
+        if (interaction.isButton()) {
+            // Gestion du bouton "Back to Main Menu"
+            if (interaction.customId === 'help_back_to_main') {
+              // Revenir au menu principal avec la méthode de voiceStateUpdate.js
+              const serverName = message.guild.name;
+              
+              // Thumbnail pour le menu principal (URL directe)
+              
+              const titleText = new TextDisplayBuilder().setContent(`# <:HG:1412963551697567856> Sorae Help `);
+              const descriptionText = new TextDisplayBuilder().setContent(
+                `> **🎤 Welcome to OneTab Voice Management System!**
+> **•  Create instant temporary voice channels with advanced controls**
+> **•  Lock, hide, mute, and customize your private voice space**
+> **•  Share management with trusted users and block unwanted guests**
+
+**My Prefix:** \`.v\``
+              );
+              const footerText = new TextDisplayBuilder().setContent(`OneTab - Voice management | Use the menu below to navigate`);
+
+              // Section principale avec thumbnail (comme dans voiceStateUpdate.js)
+              const mainSection = new SectionBuilder()
+                .addTextDisplayComponents(titleText, descriptionText)
+                .setThumbnailAccessory(
+                  thumbnail => thumbnail
+                    .setDescription('Help System - Voice Management')
+                    .setURL('https://cdn.discordapp.com/attachments/1406646913201209374/1414178170378125383/telechargement_2.gif')
+                );
+
+              const selectMenuOptions = [
+                { label: 'Voice Commands', description: 'All voice channel management commands', value: 'voice', emoji: EMOJIS.VOICE },
+                { label: 'Blacklist System', description: 'Block users from your voice channels', value: 'blacklist', emoji: EMOJIS.BLACKLIST },
+                { label: 'Whitelist System', description: 'Allow only trusted users', value: 'whitelist', emoji: EMOJIS.WHITELIST },
+                { label: 'Manager System', description: 'Share channel management with trusted users', value: 'manager', emoji: EMOJIS.MANAGER },
+                { label: 'Voice Features', description: 'Enable activities, camera, soundboard, etc.', value: 'features', emoji: EMOJIS.FEATURES },
+                { label: 'Setup Commands', description: 'Server administrator configuration', value: 'setup', emoji: EMOJIS.SETUP },
+                { label: 'Admin Commands', description: 'Server-wide management tools', value: 'admin', emoji: EMOJIS.ADMIN },
+                { label: 'Task System', description: 'Staff task management system', value: 'task', emoji: EMOJIS.TASK }
+              ];
+
+              const selectMenu = new StringSelectMenuBuilder()
+                .setCustomId('help-category-select')
+                .setPlaceholder('🔍 Choose a help category')
+                .addOptions(selectMenuOptions.map(option => 
+                  new StringSelectMenuOptionBuilder()
+                    .setLabel(option.label)
+                    .setValue(option.value)
+                    .setDescription(option.description)
+                    .setEmoji(option.emoji)
+                ));
+
+              const supportButton = new ButtonBuilder()
+                .setLabel('Support Server')
+                .setStyle(ButtonStyle.Link)
+                .setURL('https://discord.gg/wyWGcKWssQ');
+
+              const inviteButton = new ButtonBuilder()
+                .setLabel('Invite Bot')
+                .setStyle(ButtonStyle.Link)
+                .setURL('https://discord.gg/wyWGcKWssQ');
+
+              const voteButton = new ButtonBuilder()
+                .setLabel('Vote')
+                .setStyle(ButtonStyle.Link)
+                .setURL('https://discord.gg/wyWGcKWssQ');
+
+              const separator = new SeparatorBuilder().setDivider(true);
+              const menuActionRow = new ActionRowBuilder().addComponents(selectMenu);
+              const buttonActionRow = new ActionRowBuilder().addComponents(supportButton, inviteButton, voteButton);
+
+              // Container principal (comme dans voiceStateUpdate.js)
+              const mainContainer = new ContainerBuilder()
+                .addSectionComponents(mainSection)
+                .addSeparatorComponents(separator)
+                .addTextDisplayComponents(footerText)
+                .addSeparatorComponents(separator)
+                .addActionRowComponents(menuActionRow, buttonActionRow);
+
+              try {
+                await interaction.reply({
+                  flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
+                  components: [mainContainer]
+                });
+                return;
+              } catch (error) {
+                if (error.code === 10062) {
+                  return;
+                }
+                throw error;
+              }
+            }
+            
+          const pageKey = interaction.customId.replace('help_', '');
+          const page = detailPages[pageKey];
+          
         if (page) {
-          await interaction.reply({
-            embeds: [page],
-            ephemeral: true
-          });
-        } else if (interaction.customId === 'help_main') {
-          // Ancien code supprimé : retour au menu principal
+              // Page de détail avec la méthode de voiceStateUpdate.js
+              // Thumbnail pour les pages de détail (URL directe)
+              
+              const titleText = new TextDisplayBuilder().setContent(`# ${page.title}`);
+              const contentText = new TextDisplayBuilder().setContent(page.content);
+              const footerText = new TextDisplayBuilder().setContent(page.footer);
+
+              // Section principale avec thumbnail (comme dans voiceStateUpdate.js)
+              const detailSection = new SectionBuilder()
+                .addTextDisplayComponents(titleText, contentText)
+                .setThumbnailAccessory(
+                  thumbnail => thumbnail
+                    .setDescription(`${page.title} - Help System`)
+                    .setURL('https://cdn.discordapp.com/attachments/1406646913201209374/1414178170378125383/telechargement_2.gif')
+                );
+
+              const backButton = new ButtonBuilder()
+                .setCustomId('help_back_to_main')
+                .setLabel('← Back to Main Menu')
+          .setStyle(ButtonStyle.Secondary)
+                .setEmoji('🏠');
+
+              const separator = new SeparatorBuilder().setDivider(true);
+              const buttonActionRow = new ActionRowBuilder().addComponents(backButton);
+
+              // Container principal (comme dans voiceStateUpdate.js)
+              const detailContainer = new ContainerBuilder()
+                .addSectionComponents(detailSection)
+                .addTextDisplayComponents(footerText)
+                .addSeparatorComponents(separator)
+                .addActionRowComponents(buttonActionRow);
+
+          try {
+                await interaction.reply({
+                  flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
+                  components: [detailContainer]
+                });
+                return;
+          } catch (error) {
+            if (error.code === 10062) {
+              return;
+            }
+            throw error;
+          }
+          }
+        }
+        
+        // Gestion du menu de sélection (géré dans interactionCreate.js)
+        if (interaction.isStringSelectMenu()) {
+          return;
         }
       });
 
@@ -427,6 +437,84 @@ module.exports = {
           // Ne rien faire à la fin du collector pour garder les boutons visibles
         } catch (_) {}
       });
-    });
+      } catch (error) {
+        console.error('[HELP] Discord Components V2 Error:', error);
+        // Fallback vers un message simple
+        return message.reply({
+          content: `# <:cropped_circle_image:1414200758877950054> Help Commands | ${serverName}
+
+> **🎤 Welcome to OneTab Voice Management System!**
+> **•  Create instant temporary voice channels with advanced controls**
+> **•  Lock, hide, mute, and customize your private voice space**
+> **•  Share management with trusted users and block unwanted guests**
+
+**My Prefix:** \`.v\`
+
+### 🔊 Voice Commands
+• \`.v help commands\` — All voice channel commands
+
+### ⛔ Blacklist System  
+• \`.v help bl\` — Blacklist management commands
+
+### ✅ Whitelist System
+• \`.v help wl\` — Whitelist management commands
+
+### 🤝 Manager System
+• \`.v help manager\` — Co-owner management commands
+
+### ✨ Voice Features
+• \`.v help features\` — Activities, camera, streaming, soundboard
+
+### 🛠️ Setup & Admin
+• \`.v help setup\` — Setup commands
+• \`.v help admin\` — Admin commands
+
+### 🔗 Support & Links
+• [Support Server](https://discord.gg/wyWGcKWssQ) — Get help
+• [Invite Bot](https://discord.gg/wyWGcKWssQ) — Add to your server  
+• [Vote](https://discord.gg/wyWGcKWssQ) — Support us
+
+**OneTab - Voice management | Use .v help [category]**`
+        });
+      }
+    } else {
+      // Fallback si Discord Components V2 n'est pas supporté
+      return message.reply({
+        content: `# <:cropped_circle_image:1414200758877950054> Help Commands | ${serverName}
+
+> **🎤 Welcome to OneTab Voice Management System!**
+> **•  Create instant temporary voice channels with advanced controls**
+> **•  Lock, hide, mute, and customize your private voice space**
+> **•  Share management with trusted users and block unwanted guests**
+
+**My Prefix:** \`.v\`
+
+### 🔊 Voice Commands
+• \`.v help commands\` — All voice channel commands
+
+### ⛔ Blacklist System  
+• \`.v help bl\` — Blacklist management commands
+
+### ✅ Whitelist System
+• \`.v help wl\` — Whitelist management commands
+
+### 🤝 Manager System
+• \`.v help manager\` — Co-owner management commands
+
+### ✨ Voice Features
+• \`.v help features\` — Activities, camera, streaming, soundboard
+
+### 🛠️ Setup & Admin
+• \`.v help setup\` — Setup commands
+• \`.v help admin\` — Admin commands
+
+### 🔗 Support & Links
+• [Support Server](https://discord.gg/wyWGcKWssQ) — Get help
+• [Invite Bot](https://discord.com/oauth2/authorize?client_id=1409259003481165876&permissions=8&integration_type=0&scope=bot+applications.commands) — Add to your server  
+• [Vote](https://discord.gg/wyWGcKWssQ) — Support us
+
+**OneTab - Voice management | Use .v help [category]**`
+      });
+    }
   }
 };

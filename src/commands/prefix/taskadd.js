@@ -1,11 +1,25 @@
-const { EmbedBuilder } = require('discord.js');
+const { 
+  EmbedBuilder, 
+  PermissionFlagsBits,
+  TextDisplayBuilder,
+  ContainerBuilder,
+  MessageFlags,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  ModalBuilder,
+  TextInputBuilder,
+  TextInputStyle,
+  StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder
+} = require('discord.js');
 const { dataManager } = require('../../utils/dataManager');
 const { errorHandler } = require('../../utils/errorHandler');
 const { updateLeaderboard } = require('../../utils/leaderboardManager');
 
 // Configuration des rôles
-const STAFF_ROLE_IDS = ['1372723869047328768' , '1372715819649335327'];
-const HIGH_ROLE_IDS = ['1373603481524502570' , '1372700459193729126' , '1372700468782039110' , '1373624244897841162' , '1377334338840166420' , '1399199681380094062' , '1377333188191588533' , '1378092097365868688'];
+const STAFF_ROLE_IDS = ['1409235424257511464'];
+const HIGH_ROLE_IDS = ['1388840745577873550'];
 
 // Utilitaire pour vérifier les rôles
 function hasRole(member, roleIds) {
@@ -36,7 +50,7 @@ async function incrementTaskCount(guildId, userId, count = 1) {
 function createErrorEmbed(title, description, color = '#ED4245') {
     return new EmbedBuilder()
         .setAuthor({ 
-            name: 'late Night', 
+            name: 'skz_rayan23', 
             iconURL: 'https://cdn.discordapp.com/avatars/1395739396128378920/a_205db0dad201aa0645e8d9bffdac9a99.gif?size=1024'
         })
         .setTitle(title)
@@ -49,7 +63,7 @@ function createErrorEmbed(title, description, color = '#ED4245') {
 function createSuccessEmbed(description) {
     return new EmbedBuilder()
         .setAuthor({ 
-            name: 'late Night', 
+            name: 'skz_rayan23', 
             iconURL: 'https://cdn.discordapp.com/avatars/1395739396128378920/a_205db0dad201aa0645e8d9bffdac9a99.gif?size=1024'
         })
         .setDescription(description)
@@ -110,7 +124,24 @@ module.exports = {
 
             // Vérifier que l'utilisateur a un rôle high
             if (!hasRole(message.member, HIGH_ROLE_IDS)) {
-                return message.reply({ embeds: [createErrorEmbed('⛔ Permission Denied', 'Only high role members can add tasks to other users.', '#FEE75C')] });
+                
+      // === DISCORD COMPONENTS V2 PANEL ===
+      const titleText = new TextDisplayBuilder()
+        .setContent('# ℹ️ Information');
+        
+      const contentText = new TextDisplayBuilder()
+        .setContent(`> **No description**`);
+        
+      const footerText = new TextDisplayBuilder()
+        .setContent('OneTab - Voice management');
+
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(titleText, contentText, footerText);
+
+      return message.reply({
+        flags: MessageFlags.IsComponentsV2,
+        components: [container]
+      });
             }
 
             // Vérifier qu'un utilisateur est mentionné ou qu'un ID est fourni
@@ -131,10 +162,44 @@ module.exports = {
                 if (args[1] && args[1].match(/^\d+$/)) {
                     taskCount = parseInt(args[1]);
                     if (taskCount <= 0) {
-                        return message.reply({ embeds: [createErrorEmbed('❌ Invalid Number', 'The number of tasks must be greater than 0.', '#FEE75C')] });
+                        
+      // === DISCORD COMPONENTS V2 PANEL ===
+      const titleText = new TextDisplayBuilder()
+        .setContent('# ℹ️ Information');
+        
+      const contentText = new TextDisplayBuilder()
+        .setContent(`> **No description**`);
+        
+      const footerText = new TextDisplayBuilder()
+        .setContent('OneTab - Voice management');
+
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(titleText, contentText, footerText);
+
+      return message.reply({
+        flags: MessageFlags.IsComponentsV2,
+        components: [container]
+      });
                     }
                     if (taskCount > 100) {
-                        return message.reply({ embeds: [createErrorEmbed('❌ Too Many Tasks', 'You can only add up to 100 tasks at once.', '#FEE75C')] });
+                        
+      // === DISCORD COMPONENTS V2 PANEL ===
+      const titleText = new TextDisplayBuilder()
+        .setContent('# ℹ️ Information');
+        
+      const contentText = new TextDisplayBuilder()
+        .setContent(`> **No description**`);
+        
+      const footerText = new TextDisplayBuilder()
+        .setContent('OneTab - Voice management');
+
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(titleText, contentText, footerText);
+
+      return message.reply({
+        flags: MessageFlags.IsComponentsV2,
+        components: [container]
+      });
                     }
                 }
             } else if (args[0].match(/^\d+$/)) {
@@ -145,10 +210,44 @@ module.exports = {
                 if (args[1] && args[1].match(/^\d+$/)) {
                     taskCount = parseInt(args[1]);
                     if (taskCount <= 0) {
-                        return message.reply({ embeds: [createErrorEmbed('❌ Invalid Number', 'The number of tasks must be greater than 0.', '#FEE75C')] });
+                        
+      // === DISCORD COMPONENTS V2 PANEL ===
+      const titleText = new TextDisplayBuilder()
+        .setContent('# ℹ️ Information');
+        
+      const contentText = new TextDisplayBuilder()
+        .setContent(`> **No description**`);
+        
+      const footerText = new TextDisplayBuilder()
+        .setContent('OneTab - Voice management');
+
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(titleText, contentText, footerText);
+
+      return message.reply({
+        flags: MessageFlags.IsComponentsV2,
+        components: [container]
+      });
                     }
                     if (taskCount > 100) {
-                        return message.reply({ embeds: [createErrorEmbed('❌ Too Many Tasks', 'You can only add up to 100 tasks at once.', '#FEE75C')] });
+                        
+      // === DISCORD COMPONENTS V2 PANEL ===
+      const titleText = new TextDisplayBuilder()
+        .setContent('# ℹ️ Information');
+        
+      const contentText = new TextDisplayBuilder()
+        .setContent(`> **No description**`);
+        
+      const footerText = new TextDisplayBuilder()
+        .setContent('OneTab - Voice management');
+
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(titleText, contentText, footerText);
+
+      return message.reply({
+        flags: MessageFlags.IsComponentsV2,
+        components: [container]
+      });
                     }
                 }
             } else {
@@ -156,24 +255,92 @@ module.exports = {
             }
             
             if (!targetUser) {
-                return message.reply({ embeds: [createErrorEmbed('❌ User Not Found', 'The specified user was not found.', '#FEE75C')] });
+                
+      // === DISCORD COMPONENTS V2 PANEL ===
+      const titleText = new TextDisplayBuilder()
+        .setContent('# ℹ️ Information');
+        
+      const contentText = new TextDisplayBuilder()
+        .setContent(`> **No description**`);
+        
+      const footerText = new TextDisplayBuilder()
+        .setContent('OneTab - Voice management');
+
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(titleText, contentText, footerText);
+
+      return message.reply({
+        flags: MessageFlags.IsComponentsV2,
+        components: [container]
+      });
             }
             
             // Vérifier si l'utilisateur cible est dans le serveur
             const targetMember = message.guild.members.cache.get(targetUserId);
             if (!targetMember) {
-                return message.reply({ embeds: [createErrorEmbed('❌ User Not in Server', 'The specified user is not a member of this server.', '#FEE75C')] });
+                
+      // === DISCORD COMPONENTS V2 PANEL ===
+      const titleText = new TextDisplayBuilder()
+        .setContent('# ℹ️ Information');
+        
+      const contentText = new TextDisplayBuilder()
+        .setContent(`> **No description**`);
+        
+      const footerText = new TextDisplayBuilder()
+        .setContent('OneTab - Voice management');
+
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(titleText, contentText, footerText);
+
+      return message.reply({
+        flags: MessageFlags.IsComponentsV2,
+        components: [container]
+      });
             }
             
             // Vérifier si l'utilisateur cible a un rôle staff
             if (!hasRole(targetMember, STAFF_ROLE_IDS)) {
-                return message.reply({ embeds: [createErrorEmbed('❌ User Not Staff', 'The specified user does not have staff permissions.', '#FEE75C')] });
+                
+      // === DISCORD COMPONENTS V2 PANEL ===
+      const titleText = new TextDisplayBuilder()
+        .setContent('# ℹ️ Information');
+        
+      const contentText = new TextDisplayBuilder()
+        .setContent(`> **No description**`);
+        
+      const footerText = new TextDisplayBuilder()
+        .setContent('OneTab - Voice management');
+
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(titleText, contentText, footerText);
+
+      return message.reply({
+        flags: MessageFlags.IsComponentsV2,
+        components: [container]
+      });
             }
             
                             // Ajouter les tâches à l'utilisateur
                 const newCount = await incrementTaskCount(guildId, targetUserId, taskCount);
                 if (newCount === null) {
-                    return message.reply({ embeds: [createErrorEmbed('❌ System Error', 'Error while adding tasks to user.')] });
+                    
+      // === DISCORD COMPONENTS V2 PANEL ===
+      const titleText = new TextDisplayBuilder()
+        .setContent('# ℹ️ Information');
+        
+      const contentText = new TextDisplayBuilder()
+        .setContent(`> **No description**`);
+        
+      const footerText = new TextDisplayBuilder()
+        .setContent('OneTab - Voice management');
+
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(titleText, contentText, footerText);
+
+      return message.reply({
+        flags: MessageFlags.IsComponentsV2,
+        components: [container]
+      });
                 }
                 
                 const taskText = taskCount === 1 ? 'task' : 'tasks';

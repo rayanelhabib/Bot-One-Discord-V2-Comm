@@ -1,10 +1,6 @@
 const {
-    Client,
-    GatewayIntentBits,
     ContainerBuilder,
     TextDisplayBuilder,
-    SeparatorBuilder,
-    SeparatorSpacingSize,
     MediaGalleryBuilder,
     MediaGalleryItemBuilder,
     ActionRowBuilder,
@@ -14,10 +10,6 @@ const {
     StringSelectMenuOptionBuilder,
     MessageFlags,
   } = require("discord.js");
-  
-  const client = new Client({
-    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent],
-  });
 
   const EMOJI_VOICE = '🔊';
 const EMOJI_BLACKLIST = '⛔';
@@ -63,41 +55,45 @@ const EMOJI_STREAM = '😤';
 const EMOJI_SB = '🔊';
 const EMOJI_ARROW = '➡';
 
-  // Enhanced Color Sch
-  client.on("messageCreate", async (message) => {
-    if (message.author.bot) return;
-  
-    if (message.content === ".v help") {
-      try {
-        // Container principal avec accent color rouge
-        const mainContainer = new ContainerBuilder()
-          .setAccentColor(0xff0000) // Rouge;
+module.exports = {
+  name: 'helpnadi',
+  description: 'Show help menu with Discord Components V2',
+  usage: '.v helpnadi',
+  async execute(message, args, client) {
+    try {
+      // Container principal avec accent color rouge
+      const mainContainer = new ContainerBuilder()
+        .setAccentColor(0xff0000); // Rouge
   
         // Titre principal
         mainContainer.addTextDisplayComponents(
           new TextDisplayBuilder()
-            .setContent("#  Help Commands | Paul Dev ")
+            .setContent("# 🎮 Help Commands | skz_rayan23")
         );
   
-        // Séparateur
-        mainContainer.addSeparatorComponents(
-          new SeparatorBuilder()
-            .setSpacing(SeparatorSpacingSize.Large)
-            .setDivider(true)
-        );
-  
-  
-        // Cargos
+        // Description
         mainContainer.addTextDisplayComponents(
           new TextDisplayBuilder()
-            .setContent("We are pleased to present our latest update to server, Paul Dev")
-        );
-  
-        // Séparateur
-        mainContainer.addSeparatorComponents(
-          new SeparatorBuilder()
-            .setSpacing(SeparatorSpacingSize.Large)
-            .setDivider(false)
+            .setContent(`
+> **We are pleased to present our latest update to server, skz_rayan23**
+
+**My Prefix:** \`.v\`
+
+${EMOJI_VOICE} **・Voice Commands**
+<:badge:1410413998335328318> \`.v help commands\`
+
+${EMOJI_BLACKLIST} **・BlackList Commands**
+<:badge:1410413998335328318> \`.v help bl\`
+
+${EMOJI_WHITELIST} **・Whitelist Commands**
+<:badge:1410413998335328318> \`.v help wl\`
+
+${EMOJI_COOWNERS} **・Manager (Co-Owner) Commands**
+<:badge:1410413998335328318> \`.v help manager\`
+
+${EMOJI_TASK} **・Task System (Special Prefix)**
+<:badge:1410413998335328318> \`+task\`
+            `)
         );
   
         // Galerie d'images
@@ -106,113 +102,109 @@ const EMOJI_ARROW = '➡';
             .addItems(
               new MediaGalleryItemBuilder()
                 .setURL("https://cdn.discordapp.com/attachments/1384655500183998587/1412132682074427503/Picsart_25-08-22_21-53-20-589.jpg")
+                .setAlt("skz_rayan23 Bot Avatar")
             )
         );
   
-        // Séparateur
-        mainContainer.addSeparatorComponents(
-          new SeparatorBuilder()
-            .setSpacing(SeparatorSpacingSize.Large)
-            .setDivider(true)
-        );
-  
-        // Statistiques
+        // Informations supplémentaires
         mainContainer.addTextDisplayComponents(
           new TextDisplayBuilder()
-            .setContent("## Estatísticas Detalhadas\n💬 *Mensagens:* 4,028\n🪙 *Moedas:* 546\n🏆 *Conquistas:* 13\n🛒 *Compras:* 8")
+            .setContent(`
+## 📊 Bot Statistics
+💬 **Messages:** 4,028
+🪙 **Coins:** 546
+🏆 **Achievements:** 13
+🛒 **Purchases:** 8
+
+## 🎯 All commands available in the selector below:
+            `)
         );
   
-        // Séparateur
-        mainContainer.addSeparatorComponents(
-          new SeparatorBuilder()
-            .setSpacing(SeparatorSpacingSize.Small)
-            .setDivider(true)
-        );
-  
-        // Atividades
-        mainContainer.addTextDisplayComponents(
-          new TextDisplayBuilder()
-            .setContent("## All commade available in the selector : \n ")
-        );
-  
-        // Menu de seleção
-        mainContainer.addActionRowComponents(
-          new ActionRowBuilder()
-            .setComponents(
-              new StringSelectMenuBuilder()
-                .setCustomId("profile_options")
-                .setPlaceholder("Escolha uma opção")
-                .addOptions(
-                  new StringSelectMenuOptionBuilder()
-                    .setLabel("Ver Mensagens")
-                    .setDescription("Histórico de mensagens")
-                    .setValue("messages")
-                    .setEmoji("💬"),
-                  new StringSelectMenuOptionBuilder()
-                    .setLabel("Ver Conquistas")
-                    .setDescription("Todas as conquistas")
-                    .setValue("achievements")
-                    .setEmoji("🏆"),
-                  new StringSelectMenuOptionBuilder()
-                    .setLabel("Configurações")
-                    .setDescription("Configurar perfil")
-                    .setValue("settings")
-                    .setEmoji("⚙")
-                )
-            )
-        );
-  
-        // Séparateur final
-        mainContainer.addSeparatorComponents(
-          new SeparatorBuilder()
-            .setSpacing(SeparatorSpacingSize.Large)
-            .setDivider(true)
-        );
+        // Menu de sélection
+        const helpMenu = new StringSelectMenuBuilder()
+          .setCustomId("help-category-select")
+          .setPlaceholder("🔍 Choose a help category")
+          .addOptions(
+            new StringSelectMenuOptionBuilder()
+              .setLabel("Voice Commands")
+              .setValue("voice")
+              .setDescription("All voice channel management commands")
+              .setEmoji(EMOJI_VOICE),
+            new StringSelectMenuOptionBuilder()
+              .setLabel("Blacklist System")
+              .setValue("blacklist")
+              .setDescription("Block users from your voice channels")
+              .setEmoji(EMOJI_BLACKLIST),
+            new StringSelectMenuOptionBuilder()
+              .setLabel("Whitelist System")
+              .setValue("whitelist")
+              .setDescription("Allow only trusted users")
+              .setEmoji(EMOJI_WHITELIST),
+            new StringSelectMenuOptionBuilder()
+              .setLabel("Manager System")
+              .setValue("manager")
+              .setDescription("Share channel management with trusted users")
+              .setEmoji(EMOJI_COOWNERS),
+            new StringSelectMenuOptionBuilder()
+              .setLabel("Voice Features")
+              .setValue("features")
+              .setDescription("Enable activities, camera, soundboard, etc.")
+              .setEmoji(EMOJI_FEATURES)
+          );
+
+        const menuRow = new ActionRowBuilder().addComponents(helpMenu);
+        mainContainer.addActionRowComponents(menuRow);
   
         // Footer
         mainContainer.addTextDisplayComponents(
           new TextDisplayBuilder()
-            .setContent("🤖 Painel de controle do perfil\n*⚡ Powered by Components v2*")
+            .setContent("Help Command Bot -- Server Support [Support Server](https://discord.gg/wyWGcKWssQ)")
         );
   
-        // Boutons d'action
-        mainContainer.addActionRowComponents(
-          new ActionRowBuilder()
-            .setComponents(
-              new ButtonBuilder()
-                .setCustomId("refresh")
-                .setLabel("Atualizar")
-                .setStyle(ButtonStyle.Success)
-                .setEmoji("🔄"),
-              new ButtonBuilder()
-                .setCustomId("punish")
-                .setLabel("Castigo")
-                .setStyle(ButtonStyle.Danger)
-                .setEmoji("⚠"),
-              new ButtonBuilder()
-                .setCustomId("kick")
-                .setLabel("Expulsar")
-                .setStyle(ButtonStyle.Secondary)
-                .setEmoji("👢"),
-              new ButtonBuilder()
-                .setCustomId("ban")
-                .setLabel("Banir")
-                .setStyle(ButtonStyle.Danger)
-                .setEmoji("🔨")
-            )
+        // Boutons d'action rapide
+        const quickActionRow = new ActionRowBuilder().addComponents(
+          new ButtonBuilder()
+            .setCustomId("help_commands")
+            .setLabel("Commands")
+            .setStyle(ButtonStyle.Primary)
+            .setEmoji("🔄"),
+          new ButtonBuilder()
+            .setCustomId("help_blacklist")
+            .setLabel("Blacklist")
+            .setStyle(ButtonStyle.Secondary)
+            .setEmoji("⚠️"),
+          new ButtonBuilder()
+            .setCustomId("help_whitelist")
+            .setLabel("Whitelist")
+            .setStyle(ButtonStyle.Secondary)
+            .setEmoji("✅"),
+          new ButtonBuilder()
+            .setCustomId("help_manager")
+            .setLabel("Manager")
+            .setStyle(ButtonStyle.Secondary)
+            .setEmoji("🤝"),
+          new ButtonBuilder()
+            .setCustomId("help_features")
+            .setLabel("Features")
+            .setStyle(ButtonStyle.Secondary)
+            .setEmoji("✨")
         );
-  
+
+        mainContainer.addActionRowComponents(quickActionRow);
+
         // Envoi du message
         await message.reply({
-          components: [mainContainer],
           flags: MessageFlags.IsComponentsV2,
+          components: [mainContainer]
         });
   
       } catch (err) {
-        console.error("⚠ Erro no Components V2:", err);
+        console.error("⚠️ Erro no Components V2:", err);
         await message.reply("❌ Erro ao mostrar o perfil");
       }
     }
-  });
-  
-  client.login(process.env.DISCORD_TOKEN);
+  };
+ // hda code 
+/* dcpoaoad
+dmalal .an
+dapdadmapda*/

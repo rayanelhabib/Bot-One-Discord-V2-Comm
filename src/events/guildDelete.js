@@ -4,6 +4,15 @@ module.exports = {
   name: 'guildDelete',
   async execute(guild) {
     console.log(`Left guild: ${guild.name} (${guild.id})`);
+    
+    // Mettre à jour les statistiques pour le dashboard
+    if (global.updateBotStats) {
+      global.updateBotStats();
+    }
+    if (global.addBotLog) {
+      global.addBotLog('info', `Serveur supprimé: ${guild.name}`);
+    }
+    
     const guildKey = `guild:${guild.id}`;
 
     try {

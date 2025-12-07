@@ -1,68 +1,149 @@
-const { redis } = require('../../redisClient');
-const { EmbedBuilder } = require('discord.js');
+const { 
+  EmbedBuilder, 
+  PermissionFlagsBits,
+  TextDisplayBuilder,
+  ContainerBuilder,
+  MessageFlags
+} = require('discord.js');
 
 module.exports = {
   name: 'tlock',
-  description: 'Lock text chat in your voice channel (only you can speak)',
+  description: 'Temporarily lock your voice channel',
   usage: '.v tlock',
   async execute(message, args, client) {
+    const { isOwnerOrManager } = require('../../utils/voiceHelper');
+    const { redis } = require('../../redisClient');
+    
     const voiceChannel = message.member.voice.channel;
-    if (!voiceChannel) return message.reply({ embeds: [
-      new EmbedBuilder()
-        .setAuthor({ 
-  			name: 'late Night', 
- 			iconURL: 'https://cdn.discordapp.com/avatars/1395739396128378920/a_205db0dad201aa0645e8d9bffdac9a99.gif?size=1024'
-		})
-        .setDescription('⚠️ Join a voice channel first!')
-        .setColor('#ED4245')
-        .setFooter({ text: 'OneTab - Voice management' })
-    ] });
+    if (!voiceChannel) {
+      // === DISCORD COMPONENTS V2 ERROR PANEL ===
+      const titleText = new TextDisplayBuilder()
+        .setContent('# ⚠️ Voice Channel Required');
+        
+      const contentText = new TextDisplayBuilder()
+        .setContent(`
+> **You must be in a voice channel to lock it!**
 
-    const creatorId = await redis.get(`creator:${voiceChannel.id}`);
-    if (creatorId !== message.author.id) {
-      return message.reply({ embeds: [
-        new EmbedBuilder()
-          .setAuthor({ 
-  				name: 'late Night', 
- 				iconURL: 'https://cdn.discordapp.com/avatars/1395739396128378920/a_205db0dad201aa0645e8d9bffdac9a99.gif?size=1024'
-			})
-          .setDescription(`⚠️ <@${message.author.id}> Only the channel owner can lock the VC chat!`)
-          .setColor('#FEE75C')
-      ] });
+**What to do:**
+• Join any voice channel in this server
+• Make sure you're connected to voice
+• Then use the tlock command again
+
+**Usage:** \`.v tlock\`
+        `);
+        
+      const footerText = new TextDisplayBuilder()
+        .setContent('OneTab - Voice management | Join a voice channel to continue');
+
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(titleText, contentText, footerText);
+
+      return message.reply({
+        flags: MessageFlags.IsComponentsV2,
+        components: [container]
+      });
+    }
+
+    // Check ownership or manager status
+    const hasPermission = await isOwnerOrManager(voiceChannel.id, message.author.id);
+    if (!hasPermission) {
+      // === DISCORD COMPONENTS V2 PERMISSION PANEL ===
+      const titleText = new TextDisplayBuilder()
+        .setContent('# ⚠️ Permission Denied');
+        
+      const contentText = new TextDisplayBuilder()
+        .setContent(`
+> **Only the channel owner or managers can lock the channel!**
+
+**Who can lock the channel:**
+• Channel owner (creator)
+• Channel managers (co-owners)
+
+**What you can do:**
+• Ask the channel owner to lock the channel
+• Become a manager of this channel
+• Create your own voice channel
+        `);
+        
+      const footerText = new TextDisplayBuilder()
+        .setContent('OneTab - Voice management | Owner/manager access required');
+
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(titleText, contentText, footerText);
+
+      return message.reply({
+        flags: MessageFlags.IsComponentsV2,
+        components: [container]
+      });
     }
 
     try {
-      // Deny @everyone, allow owner
-      await voiceChannel.permissionOverwrites.edit(message.guild.roles.everyone, {
-        SendMessages: false,
+      // Lock the channel by denying connect permissions
+      await voiceChannel.permissionOverwrites.edit(voiceChannel.guild.roles.everyone, {
+        Connect: false
       });
 
-      await voiceChannel.permissionOverwrites.edit(message.author.id, {
-        SendMessages: true,
-      });
+      // Store locked state in Redis
+      await redis.set(`tlocked:${voiceChannel.id}`, 'true');
 
-      await redis.set(`tlock:${voiceChannel.id}`, '1');
-      message.reply({ embeds: [
-        new EmbedBuilder()
-          .setAuthor({ 
-  				name: 'late Night', 
- 				iconURL: 'https://cdn.discordapp.com/avatars/1395739396128378920/a_205db0dad201aa0645e8d9bffdac9a99.gif?size=1024'
-			})
-          .setDescription(`✅ <@${message.author.id}> VC chat has been locked. Only you can send messages.`)
-          .setColor('#57F287')
-      ] });
-    } catch (err) {
-      console.error(err);
-      message.reply({ embeds: [
-        new EmbedBuilder()
-          .setAuthor({ 
-  				name: 'late Night', 
- 				iconURL: 'https://cdn.discordapp.com/avatars/1395739396128378920/a_205db0dad201aa0645e8d9bffdac9a99.gif?size=1024'
-			})
-          .setDescription('⚠️ Failed to lock VC chat.')
-          .setColor('#ED4245')
-          .setFooter({ text: 'OneTab - Voice management' })
-      ] });
+      // === DISCORD COMPONENTS V2 SUCCESS PANEL ===
+      const titleText = new TextDisplayBuilder()
+        .setContent('# 🔒 Channel Locked');
+        
+      const contentText = new TextDisplayBuilder()
+        .setContent(`
+> **Voice channel locked successfully!**
+
+**Channel:** <#${voiceChannel.id}>
+
+**What happened:**
+• Channel is now locked to new users
+• Only current members can stay
+• Setting will be saved automatically
+
+**To unlock:** Use \`.v tunlock\`
+        `);
+        
+      const footerText = new TextDisplayBuilder()
+        .setContent('OneTab - Voice management | Channel locked successfully');
+
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(titleText, contentText, footerText);
+
+      return message.reply({
+        flags: MessageFlags.IsComponentsV2,
+        components: [container]
+      });
+      
+    } catch (error) {
+      console.error('[TLOCK] Error:', error);
+      
+      // === DISCORD COMPONENTS V2 ERROR PANEL ===
+      const titleText = new TextDisplayBuilder()
+        .setContent('# ❌ Error');
+        
+      const contentText = new TextDisplayBuilder()
+        .setContent(`
+> **Failed to lock the voice channel!**
+
+**Error:** ${error.message}
+
+**What to do:**
+• Check if the bot has permission to manage the channel
+• Try again in a few moments
+• Contact an administrator if the problem persists
+        `);
+        
+      const footerText = new TextDisplayBuilder()
+        .setContent('OneTab - Voice management | Error locking channel');
+
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(titleText, contentText, footerText);
+
+      return message.reply({
+        flags: MessageFlags.IsComponentsV2,
+        components: [container]
+      });
     }
   }
 };

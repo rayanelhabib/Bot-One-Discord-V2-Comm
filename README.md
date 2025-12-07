@@ -165,3 +165,46 @@ Pour toute question ou problème :
 ## 📄 Licence
 
 Ce projet est sous licence MIT. 
+
+## 📦 Préparer le dépôt pour GitHub
+
+Suivez ces étapes pour initialiser et pousser ce projet sur GitHub (Windows `cmd.exe` commands):
+
+1. Initialiser le dépôt localement (si ce n'est pas déjà fait)
+
+```cmd
+git init
+git branch -M main
+git add -A
+git commit -m "Initial commit"
+```
+
+2. Ajouter le dépôt distant et pousser (remplacez l'URL par votre dépôt)
+
+```cmd
+git remote add origin https://github.com/<votre-utilisateur>/<votre-repo>.git
+git push -u origin main
+```
+
+3. (Optionnel) Créer le dépôt et pousser en une commande avec GitHub CLI:
+
+```cmd
+gh repo create <votre-utilisateur>/<votre-repo> --public --source=. --remote=origin --push
+```
+
+4. Vérifier que GitHub Actions s'exécute: la workflow `nodejs.yml` se déclenchera automatiquement sur `push`.
+
+5. Important: ne poussez jamais vos secrets — créez un fichier `.env` local en copiant `.env.example` et configurez les variables dans GitHub Actions/Secrets si nécessaire.
+
+```cmd
+copy .env.example .env
+```
+
+6. Démarrer localement après `git clone`:
+
+```cmd
+npm install
+npm start
+```
+
+Si vous voulez, je peux aussi créer un fichier `LICENSE` ou un `CODE_OF_CONDUCT` et configurer plus de workflows (lint, build, deploy). Dites-moi ce que vous préférez.

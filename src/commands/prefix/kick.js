@@ -1,5 +1,19 @@
 const { redis } = require('../../redisClient');
-const { EmbedBuilder } = require('discord.js');
+const { 
+  EmbedBuilder, 
+  PermissionFlagsBits,
+  TextDisplayBuilder,
+  ContainerBuilder,
+  MessageFlags,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  ModalBuilder,
+  TextInputBuilder,
+  TextInputStyle,
+  StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder
+} = require('discord.js');
 const { isBotCreatedChannel, isOwnerOrManager } = require('../../utils/voiceHelper');
 
 module.exports = {
@@ -11,7 +25,7 @@ module.exports = {
     if (!voiceChannel) return message.reply({ embeds: [
       new EmbedBuilder()
         .setAuthor({ 
-  			name: 'late Night', 
+  			name: 'skz_rayan23', 
  			iconURL: 'https://cdn.discordapp.com/avatars/1395739396128378920/a_205db0dad201aa0645e8d9bffdac9a99.gif?size=1024'
 		})
         .setDescription(`⚠️ <@${message.author.id}> You must join a voice channel first!`)
@@ -21,15 +35,31 @@ module.exports = {
     // Verify that this is a bot-created channel
     const isBotChannel = await isBotCreatedChannel(voiceChannel.id);
     if (!isBotChannel) {
-      return message.reply({ embeds: [
-        new EmbedBuilder()
-          .setAuthor({ 
-  				name: 'late Night', 
- 				iconURL: 'https://cdn.discordapp.com/avatars/1395739396128378920/a_205db0dad201aa0645e8d9bffdac9a99.gif?size=1024'
-			})
-          .setDescription('⚠️ This command only works in channels created by the bot!')
-          .setColor('#ED4245')
-      ] });
+      
+      // === DISCORD COMPONENTS V2 ERROR PANEL ===
+      const titleText = new TextDisplayBuilder()
+        .setContent('# ⚠️ Error');
+        
+      const errorText = new TextDisplayBuilder()
+        .setContent(`
+> **⚠️ This command only works in channels created by the bot!**
+
+**What to do:**
+• Check your permissions
+• Verify the channel exists
+• Contact an administrator if needed
+        `);
+        
+      const footerText = new TextDisplayBuilder()
+        .setContent('OneTab - Voice management');
+
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(titleText, errorText, footerText);
+
+      return message.reply({
+        flags: MessageFlags.IsComponentsV2,
+        components: [container]
+      });
     }
 
     // Verify ownership
@@ -39,7 +69,7 @@ module.exports = {
       return message.reply({ embeds: [
         new EmbedBuilder()
           .setAuthor({ 
-  				name: 'late Night', 
+  				name: 'skz_rayan23', 
  				iconURL: 'https://cdn.discordapp.com/avatars/1395739396128378920/a_205db0dad201aa0645e8d9bffdac9a99.gif?size=1024'
 			})
           .setDescription(`⚠️ <@${message.author.id}> Only the channel owner can kick users!`)
@@ -59,7 +89,7 @@ module.exports = {
         return message.reply({ embeds: [
           new EmbedBuilder()
             .setAuthor({ 
-  				name: 'late Night', 
+  				name: 'skz_rayan23', 
  				iconURL: 'https://cdn.discordapp.com/avatars/1395739396128378920/a_205db0dad201aa0645e8d9bffdac9a99.gif?size=1024'
 			})
             .setDescription('⚠️ Usage: `.v kick @username` or `.v kick <ID>`')
@@ -72,7 +102,7 @@ module.exports = {
     if (!target) return message.reply({ embeds: [
       new EmbedBuilder()
         .setAuthor({ 
-  				name: 'late Night', 
+  				name: 'skz_rayan23', 
  				iconURL: 'https://cdn.discordapp.com/avatars/1395739396128378920/a_205db0dad201aa0645e8d9bffdac9a99.gif?size=1024'
 			})
         .setDescription('⚠️<@${message.author.id}> Usage: `.v kick @username` or `.v kick <ID>`')
@@ -85,7 +115,7 @@ module.exports = {
       return message.reply({ embeds: [
         new EmbedBuilder()
           .setAuthor({ 
-  				name: 'late Night', 
+  				name: 'skz_rayan23', 
  				iconURL: 'https://cdn.discordapp.com/avatars/1395739396128378920/a_205db0dad201aa0645e8d9bffdac9a99.gif?size=1024'
 			})
           .setDescription('⚠️ You cannot kick yourself!')
@@ -112,15 +142,31 @@ module.exports = {
         // Vérifier que l'utilisateur est toujours connecté avant de le déconnecter
         if (!target.voice?.channelId || target.voice.channelId !== voiceChannel.id) {
           console.log('[KICK] User is no longer in the voice channel');
-          return message.reply({ embeds: [
-            new EmbedBuilder()
-              .setAuthor({ 
-                name: 'late Night', 
-                iconURL: 'https://cdn.discordapp.com/avatars/1395739396128378920/a_205db0dad201aa0645e8d9bffdac9a99.gif?size=1024'
-              })
-              .setDescription('⚠️ That user is no longer in your voice channel!')
-              .setColor('#ED4245')
-          ] });
+          
+      // === DISCORD COMPONENTS V2 ERROR PANEL ===
+      const titleText = new TextDisplayBuilder()
+        .setContent('# ⚠️ Error');
+        
+      const errorText = new TextDisplayBuilder()
+        .setContent(`
+> **⚠️ That user is no longer in your voice channel!**
+
+**What to do:**
+• Check your permissions
+• Verify the channel exists
+• Contact an administrator if needed
+        `);
+        
+      const footerText = new TextDisplayBuilder()
+        .setContent('OneTab - Voice management');
+
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(titleText, errorText, footerText);
+
+      return message.reply({
+        flags: MessageFlags.IsComponentsV2,
+        components: [container]
+      });
         }
         
         await target.voice.disconnect('Kicked by channel owner');
@@ -128,7 +174,7 @@ module.exports = {
         message.reply({ embeds: [
           new EmbedBuilder()
             .setAuthor({ 
-              name: 'late Night', 
+              name: 'skz_rayan23', 
               iconURL: 'https://cdn.discordapp.com/avatars/1395739396128378920/a_205db0dad201aa0645e8d9bffdac9a99.gif?size=1024'
             })
             .setDescription(`✅ <@${message.author.id}> Successfully kicked ${target.displayName} from the voice channel`)
@@ -143,7 +189,7 @@ module.exports = {
           message.reply({ embeds: [
             new EmbedBuilder()
               .setAuthor({ 
-                name: 'late Night', 
+                name: 'skz_rayan23', 
                 iconURL: 'https://cdn.discordapp.com/avatars/1395739396128378920/a_205db0dad201aa0645e8d9bffdac9a99.gif?size=1024'
               })
               .setDescription('⚠️ That user is no longer connected to voice!')
@@ -153,7 +199,7 @@ module.exports = {
           message.reply({ embeds: [
             new EmbedBuilder()
               .setAuthor({ 
-                name: 'late Night', 
+                name: 'skz_rayan23', 
                 iconURL: 'https://cdn.discordapp.com/avatars/1395739396128378920/a_205db0dad201aa0645e8d9bffdac9a99.gif?size=1024'
               })
               .setDescription('⚠️ Failed to kick user due to an error!')
@@ -165,7 +211,7 @@ module.exports = {
       message.reply({ embeds: [
         new EmbedBuilder()
           .setAuthor({ 
-            name: 'late Night', 
+            name: 'skz_rayan23', 
             iconURL: 'https://cdn.discordapp.com/avatars/1395739396128378920/a_205db0dad201aa0645e8d9bffdac9a99.gif?size=1024'
           })
           .setDescription('⚠️ That user is not in your voice channel!')

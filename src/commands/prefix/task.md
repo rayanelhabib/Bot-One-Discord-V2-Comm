@@ -612,7 +612,7 @@ function createTaskEmbed(voiceChannel, member, startTime) {
         
         return new EmbedBuilder()
             .setAuthor({ 
-                name: 'Late Night', 
+                name: 'skz_rayan23', 
                 iconURL: getServerIcon(voiceChannel.guild)
             })
             .setColor(0x5865F2)
@@ -685,7 +685,7 @@ function createFinalTaskEmbed(voiceChannel, member) {
         
         return new EmbedBuilder()
             .setAuthor({ 
-                name: 'Late Night', 
+                name: 'skz_rayan23', 
                 iconURL: getServerIcon(voiceChannel.guild)
             })
             .setColor(0x57F287)
@@ -1063,7 +1063,7 @@ async function sendTaskEmbedToChannel(message, taskEmbed, voiceChannel, member, 
 function createErrorEmbed(title, description, color = '#ED4245') {
     return new EmbedBuilder()
         .setAuthor({ 
-            name: 'late Night', 
+            name: 'skz_rayan23', 
             iconURL: 'https://cdn.discordapp.com/avatars/1395739396128378920/a_205db0dad201aa0645e8d9bffdac9a99.gif?size=1024'
         })
         .setTitle(title)
@@ -1076,7 +1076,7 @@ function createErrorEmbed(title, description, color = '#ED4245') {
 function createSuccessEmbed(description) {
     return new EmbedBuilder()
         .setAuthor({ 
-            name: 'late Night', 
+            name: 'skz_rayan23', 
             iconURL: 'https://cdn.discordapp.com/avatars/1395739396128378920/a_205db0dad201aa0645e8d9bffdac9a99.gif?size=1024'
         })
         .setDescription(description)
@@ -1131,7 +1131,7 @@ function createLeaderboardSuccessEmbed(member, newCount) {
 function createPauseEmbed(voiceChannel, member) {
     return new EmbedBuilder()
         .setAuthor({ 
-            name: 'Late Night', 
+            name: 'skz_rayan23', 
             iconURL: 'https://cdn.discordapp.com/avatars/1395739396128378920/a_205db0dad201aa0645e8d9bffdac9a99.gif?size=1024'
         })
         .setColor(0xFEE75C)
@@ -1182,7 +1182,7 @@ function createResumeEmbed(voiceChannel, member, remainingSeconds) {
     
     return new EmbedBuilder()
         .setAuthor({ 
-            name: 'Late Night', 
+            name: 'skz_rayan23', 
             iconURL: 'https://cdn.discordapp.com/avatars/1395739396128378920/a_205db0dad201aa0645e8d9bffdac9a99.gif?size=1024'
         })
         .setColor(0x57F287)
@@ -1230,7 +1230,7 @@ function createResumeEmbed(voiceChannel, member, remainingSeconds) {
 function createCancelEmbed(voiceChannel, member) {
     return new EmbedBuilder()
         .setAuthor({ 
-            name: 'Late Night', 
+            name: 'skz_rayan23', 
             iconURL: 'https://cdn.discordapp.com/avatars/1395739396128378920/a_205db0dad201aa0645e8d9bffdac9a99.gif?size=1024'
         })
         .setColor(0xED4245)
@@ -1278,7 +1278,7 @@ function createCancelEmbed(voiceChannel, member) {
 function createLowMembersCancelEmbed(voiceChannel, member) {
     return new EmbedBuilder()
         .setAuthor({ 
-            name: 'Late Night', 
+            name: 'skz_rayan23', 
             iconURL: 'https://cdn.discordapp.com/avatars/1395739396128378920/a_205db0dad201aa0645e8d9bffdac9a99.gif?size=1024'
         })
         .setColor(0xED4245)
@@ -1347,7 +1347,7 @@ function createTaskCancelledEmbed(voiceChannel, member, reason) {
     
     return new EmbedBuilder()
         .setAuthor({ 
-            name: 'Late Night', 
+            name: 'skz_rayan23', 
             iconURL: 'https://cdn.discordapp.com/avatars/1395739396128378920/a_205db0dad201aa0645e8d9bffdac9a99.gif?size=1024'
         })
         .setColor(color)

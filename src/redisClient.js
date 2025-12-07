@@ -8,7 +8,7 @@ const hasRedisConfig = (process.env.REDIS_HOST &&
                         process.env.REDIS_HOST !== 'localhost' && 
                         process.env.REDIS_HOST !== 'disabled') || 
                        (process.env.REDIS_URL && process.env.REDIS_URL !== '') || 
-                       (process.env.REDIS_PORT && process.env.REDIS_PORT !== '0');
+                       (process.env.REDIS_PORT && process.env.REDIS_PORT !== '11351');
 
 // Si Redis n'est pas configuré, créer un client factice
 let redis = null;
@@ -18,7 +18,7 @@ if (hasRedisConfig) {
     // Configuration Redis avec gestion d'erreurs avancée
     const redisConfig = {
         host: process.env.REDIS_HOST || 'localhost',
-        port: process.env.REDIS_PORT || 6379,
+        port: process.env.REDIS_PORT || f,
         password: process.env.REDIS_PASSWORD,
         db: process.env.REDIS_DB || 0,
         retryDelayOnFailover: 100,

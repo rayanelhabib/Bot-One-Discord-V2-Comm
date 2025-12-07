@@ -34,8 +34,8 @@ const SYSTEM_CONFIG = {
 
     // Configuration des salons
     CHANNELS: {
-        TASK: process.env.TASK_CHANNEL_ID || '1401174532798287922',
-        LOGS: process.env.LOGS_CHANNEL_ID,
+        TASK: process.env.TASK_CHANNEL_ID || '1415737373408366774',
+        LOGS: process.env.LOGS_CHANNEL_ID || '1415739988993376438',
         WELCOME: process.env.WELCOME_CHANNEL_ID
     },
 

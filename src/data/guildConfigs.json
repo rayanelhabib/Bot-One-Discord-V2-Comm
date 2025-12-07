@@ -8,5 +8,15 @@
     "allowRenaming": true,
     "defaultUserLimit": 0,
     "prefix": ".v"
+  },
+  "1444769155818721352": {
+    "createChannelName": "test",
+    "createChannelId": "1447328359716487209",
+    "tempChannelCategory": "1444769156711977104",
+    "tempChannelCategoryId": null,
+    "autoDeleteEmpty": true,
+    "allowRenaming": true,
+    "defaultUserLimit": 0,
+    "prefix": ".v"
   }
 }

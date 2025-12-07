@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title || 'Soran Dashboard' %></title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="stylesheet" href="/css/animations.css">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="theme-dark" data-page="<%= currentPage || 'home' %>">
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-logo">
+                <div class="logo-icon">
+                    <i class="fas fa-microphone"></i>
+                </div>
+                <h2>Soran</h2>
+            </div>
+            <div class="loading-bar">
+                <div class="loading-progress"></div>
+            </div>
+            <p class="loading-text">Chargement du dashboard...</p>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="/" class="logo-link">
+                    <div class="logo-icon">
+                        <i class="fas fa-microphone"></i>
+                    </div>
+                    <span class="logo-text">Soran</span>
+                    <span class="logo-version">v2.0</span>
+                </a>
+            </div>
+
+            <div class="nav-menu" id="nav-menu">
+                <ul class="nav-list">
+                    <li class="nav-item">
+                        <a href="/" class="nav-link <%= currentPage === 'home' ? 'active' : '' %>">
+                            <i class="fas fa-home"></i>
+                            <span>Accueil</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/commands" class="nav-link <%= currentPage === 'commands' ? 'active' : '' %>">
+                            <i class="fas fa-terminal"></i>
+                            <span>Commandes</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/about" class="nav-link <%= currentPage === 'about' ? 'active' : '' %>">
+                            <i class="fas fa-info-circle"></i>
+                            <span>À propos</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="nav-actions">
+                <button class="theme-toggle" id="theme-toggle" aria-label="Changer de thème">
+                    <i class="fas fa-moon"></i>
+                </button>
+                
+                <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Menu mobile">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content" id="main-content">
+        <%- body %>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Soran Bot</h3>
+                    <p>Bot Discord avancé pour la gestion des salons vocaux temporaires avec des fonctionnalités premium.</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Liens rapides</h4>
+                    <ul class="footer-links">
+                        <li><a href="/">Accueil</a></li>
+                        <li><a href="/commands">Commandes</a></li>
+                        <li><a href="/about">À propos</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Statistiques</h4>
+                    <div class="footer-stats">
+                        <div class="stat-item">
+                            <span class="stat-number" id="footer-servers">8</span>
+                            <span class="stat-label">Serveurs</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="footer-users">1.2k</span>
+                            <span class="stat-label">Utilisateurs</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="footer-uptime">99.9%</span>
+                            <span class="stat-label">Uptime</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 Soran Team. Tous droits réservés.</p>
+                <p class="footer-version">Version 2.0.0</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button class="back-to-top" id="back-to-top" aria-label="Retour en haut">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <!-- Scripts -->
+    <script src="/js/main.js"></script>
+    <script src="/js/theme.js"></script>
+    <script src="/js/animations.js"></script>
+</body>
+</html>

@@ -1,5 +1,19 @@
 const { redis } = require('../../redisClient');
-const { EmbedBuilder } = require('discord.js');
+const { 
+  EmbedBuilder, 
+  PermissionFlagsBits,
+  TextDisplayBuilder,
+  ContainerBuilder,
+  MessageFlags,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  ModalBuilder,
+  TextInputBuilder,
+  TextInputStyle,
+  StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder
+} = require('discord.js');
 
 module.exports = {
   name: 'manager',
@@ -72,13 +86,24 @@ module.exports = {
     if (sub === 'show' || sub === 's' || sub === 'list' || sub === 'l') {
       const managers = await redis.smembers(key);
       if (!managers || managers.length === 0) {
-        return message.reply({ embeds: [
-          new EmbedBuilder()
-            .setTitle('ℹ️ No Managers')
-            .setDescription('No managers set for this channel.')
-            .setColor('#FEE75C')
-            .setFooter({ text: 'OneTab - Voice management' })
-        ] });
+        
+      // === DISCORD COMPONENTS V2 PANEL ===
+      const titleText = new TextDisplayBuilder()
+        .setContent('# ℹ️ ℹ️ No Managers');
+        
+      const contentText = new TextDisplayBuilder()
+        .setContent(`> **No managers set for this channel.**`);
+        
+      const footerText = new TextDisplayBuilder()
+        .setContent('OneTab - Voice management');
+
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(titleText, contentText, footerText);
+
+      return message.reply({
+        flags: MessageFlags.IsComponentsV2,
+        components: [container]
+      });
       }
       const mentions = managers.map(id => `<@${id}>`).join(', ');
       const embed = new EmbedBuilder()
@@ -86,7 +111,24 @@ module.exports = {
         .setDescription(mentions)
         .setColor('#5865F2')
         .setFooter({ text: 'OneTab - Voice management' });
-      return message.reply({ embeds: [embed] });
+      
+      // === DISCORD COMPONENTS V2 PANEL ===
+      const titleText = new TextDisplayBuilder()
+        .setContent('# ℹ️ Information');
+        
+      const contentText = new TextDisplayBuilder()
+        .setContent(`> **No description**`);
+        
+      const footerText = new TextDisplayBuilder()
+        .setContent('OneTab - Voice management');
+
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(titleText, contentText, footerText);
+
+      return message.reply({
+        flags: MessageFlags.IsComponentsV2,
+        components: [container]
+      });
     }
 
     // If no valid subcommand

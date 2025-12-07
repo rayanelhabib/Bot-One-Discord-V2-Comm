@@ -8,6 +8,14 @@ module.exports = {
   async execute(guild, client) {
     console.log(`Joined new guild: ${guild.name} (${guild.id})`);
 
+    // Mettre à jour les statistiques pour le dashboard
+    if (global.updateBotStats) {
+      global.updateBotStats();
+    }
+    if (global.addBotLog) {
+      global.addBotLog('info', `Nouveau serveur ajouté: ${guild.name}`);
+    }
+
     try {
       // Ne crée plus de catégorie ni de salon vocal automatiquement
       // Enregistre seulement la config par défaut sans IDs de salons

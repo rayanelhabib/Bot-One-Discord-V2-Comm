@@ -9,6 +9,19 @@ module.exports = {
   once: true,
   async execute(client) {
     console.log(`✅ Logged in as ${client.user.tag}`);
+    
+    // Initialiser le système de surveillance vocale
+    if (client.voiceSurveillance) {
+      console.log('[VOICE SURVEILLANCE] Système de surveillance vocale initialisé');
+    }
+    
+    // Mettre à jour les statistiques pour le dashboard
+    if (global.updateBotStats) {
+      global.updateBotStats();
+    }
+    if (global.addBotLog) {
+      global.addBotLog('info', `Bot connecté: ${client.user.tag}`);
+    }
 
     // --- SYSTÈME ROBUSTE : Vérification du setup ---
     for (const guild of client.guilds.cache.values()) {

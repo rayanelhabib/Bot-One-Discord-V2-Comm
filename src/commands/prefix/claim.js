@@ -1,5 +1,19 @@
 const { redis } = require('../../redisClient');
-const { EmbedBuilder } = require('discord.js');
+const { 
+  EmbedBuilder, 
+  PermissionFlagsBits,
+  TextDisplayBuilder,
+  ContainerBuilder,
+  MessageFlags,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  ModalBuilder,
+  TextInputBuilder,
+  TextInputStyle,
+  StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder
+} = require('discord.js');
 const { isBotCreatedChannel } = require('../../utils/voiceHelper');
 
 module.exports = {
@@ -12,7 +26,7 @@ module.exports = {
     if (!voiceChannel) return message.reply({ embeds: [
       new EmbedBuilder()
         .setAuthor({ 
-  				name: 'Paul Dev', 
+  				name: 'skz_rayan23', 
  				iconURL: 'https://cdn.discordapp.com/attachments/1384655500183998587/1412132681705066526/Picsart_25-08-22_01-59-42-726.jpg'
 			})
         .setDescription(`⚠️<@${message.author.id}> You must join a voice channel first!`)
@@ -22,15 +36,31 @@ module.exports = {
     // Verify that this is a bot-created channel
     const isBotChannel = await isBotCreatedChannel(voiceChannel.id);
     if (!isBotChannel) {
-      return message.reply({ embeds: [
-        new EmbedBuilder()
-          .setAuthor({ 
-  				name: 'Paul Dev', 
- 				iconURL: 'https://cdn.discordapp.com/attachments/1384655500183998587/1412132681705066526/Picsart_25-08-22_01-59-42-726.jpg'
-			})
-          .setDescription('⚠️ This command only works in channels created by the bot!')
-          .setColor('#ED4245')
-      ] });
+      
+      // === DISCORD COMPONENTS V2 ERROR PANEL ===
+      const titleText = new TextDisplayBuilder()
+        .setContent('# ⚠️ Error');
+        
+      const errorText = new TextDisplayBuilder()
+        .setContent(`
+> **⚠️ This command only works in channels created by the bot!**
+
+**What to do:**
+• Check your permissions
+• Verify the channel exists
+• Contact an administrator if needed
+        `);
+        
+      const footerText = new TextDisplayBuilder()
+        .setContent('OneTab - Voice management');
+
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(titleText, errorText, footerText);
+
+      return message.reply({
+        flags: MessageFlags.IsComponentsV2,
+        components: [container]
+      });
     }
 
     const currentOwnerId = await redis.get(`creator:${voiceChannel.id}`);
@@ -42,7 +72,7 @@ module.exports = {
         return message.reply({ embeds: [
           new EmbedBuilder()
             .setAuthor({ 
-  				name: 'Paul Dev', 
+  				name: 'skz_rayan23', 
  				iconURL: 'https://cdn.discordapp.com/attachments/1384655500183998587/1412132681705066526/Picsart_25-08-22_01-59-42-726.jpg'
 		 	 })
             .setDescription(`⚠️<@${message.author.id}> This channel already has an active owner is <@${ownerId}> ! `)
@@ -61,7 +91,7 @@ module.exports = {
     message.reply({ embeds: [
       new EmbedBuilder()
         .setAuthor({ 
-  				name: 'Paul Dev', 
+  				name: 'skz_rayan23', 
  				iconURL: 'https://cdn.discordapp.com/attachments/1384655500183998587/1412132681705066526/Picsart_25-08-22_01-59-42-726.jpg'
 			})
         .setDescription(`✅ You are <@${message.author.id}> now the owner of this voice channel!`)

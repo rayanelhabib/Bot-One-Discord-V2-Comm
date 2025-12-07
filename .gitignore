@@ -1,0 +1,42 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Environment files
+# Ignore all environment files and variants
+.env
+.env.*
+*.env
+.env.*.local
+voiceStateUpdate_backup_current.txt
+voiceStateUpdate_backup_20250907_191753.txt
+DISCORD_COMPONENTS_V2_COMPLETE_DOCUMENTATION.md
+DISCORD_COMPONENTS_V2_GENERATOR_PROMPT.md
+docsaybhanarayan.md
+DISCORD_V2_UPGRADE.md
+# Logs
+logs/
+*.log
+
+# Build output
+dist/
+build/
+coverage/
+
+# Editor directories
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# Misc
+.sass-cache/
+.cache/

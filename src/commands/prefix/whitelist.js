@@ -1,240 +1,331 @@
-const { redis } = require('../../redisClient');
-const { EmbedBuilder } = require('discord.js');
+const { 
+  EmbedBuilder, 
+  PermissionFlagsBits,
+  TextDisplayBuilder,
+  ContainerBuilder,
+  MessageFlags
+} = require('discord.js');
 
 module.exports = {
   name: 'whitelist',
-  aliases: ['wl'], // Added alias for .v wl
+  aliases: ['wl'],
   description: 'Manage your persistent whitelist for all your temporary VCs',
-  usage: '.v whitelist <add|remove|list|clear> [@user or ID]',
-  async execute(message, args) {
-    const sub = args[0];
-    const userMention = message.mentions.users.first();
-
-    // Check if user is in a voice channel (context but optional)
+  usage: '.v whitelist <add|remove|list> [@user]',
+  async execute(message, args, client) {
+    const { redis } = require('../../redisClient');
+    
     const voiceChannel = message.member.voice.channel;
-    let isOwner = false;
+    if (!voiceChannel) {
+      // === DISCORD COMPONENTS V2 ERROR PANEL ===
+      const titleText = new TextDisplayBuilder()
+        .setContent('# ⚠️ Voice Channel Required');
+        
+      const contentText = new TextDisplayBuilder()
+        .setContent(`
+> **You must be in a voice channel to manage whitelist!**
 
-    if (voiceChannel) {
-      const creatorId = await redis.get(`creator:${voiceChannel.id}`);
-      isOwner = creatorId === message.author.id;
-    }
+**What to do:**
+• Join any voice channel in this server
+• Make sure you're connected to voice
+• Then use the whitelist command again
 
-    // Redis key for whitelist owner = message author
-    const key = `vc:whitelist:${message.author.id}`;
+**Usage:** \`.v whitelist <add|remove|list> [@user]\`
+        `);
+        
+      const footerText = new TextDisplayBuilder()
+        .setContent('OneTab - Voice management | Join a voice channel to continue');
 
-    if (sub === 'add') {
-      let targetId = userMention?.id;
-      if (!targetId && args[1]) {
-        targetId = args[1];
-        if (!/^\d+$/.test(targetId)) {
-          return message.reply({ embeds: [
-            new EmbedBuilder()
-              .setAuthor({ 
-  				name: 'late Night', 
- 				iconURL: 'https://cdn.discordapp.com/avatars/1395739396128378920/a_205db0dad201aa0645e8d9bffdac9a99.gif?size=1024'
-			  })
-              .setDescription('❓ Usage: `.v whitelist add @user` or `.v wl add @user`')
-              .setColor('#FEE75C')
-              .setFooter({ text: 'OneTab - Voice management' })
-          ] });
-        }
-      }
-      if (!targetId)
-        return message.reply({ embeds: [
-          new EmbedBuilder()
-            .setAuthor({ 
-  				name: 'late Night', 
- 				iconURL: 'https://cdn.discordapp.com/avatars/1395739396128378920/a_205db0dad201aa0645e8d9bffdac9a99.gif?size=1024'
-			})
-            .setDescription('❓ Usage: `.v whitelist add @user` or `.v wl add @user`')
-            .setColor('#FEE75C')
-            .setFooter({ text: 'OneTab - Voice management' })
-        ] });
-      if (targetId === message.author.id)
-        return message.reply({ embeds: [
-          new EmbedBuilder()
-            .setTitle('⛔ Not Allowed')
-            .setDescription('⚠️ You can\'t whitelist yourself.')
-            .setColor('#FEE75C')
-            .setFooter({ text: 'OneTab - Voice management' })
-        ] });
-      const isWhitelisted = await redis.sismember(key, targetId);
-      if (isWhitelisted)
-        return message.reply({ embeds: [
-          new EmbedBuilder()
-            .setAuthor({ 
-  				name: 'late Night', 
- 				iconURL: 'https://cdn.discordapp.com/avatars/1395739396128378920/a_205db0dad201aa0645e8d9bffdac9a99.gif?size=1024'
-			})
-            .setDescription(`⚠️ <@${targetId}> is already whitelisted.`)
-            .setColor('#FEE75C')
-            .setFooter({ text: 'OneTab - Voice management' })
-        ] });
-      // Auto-remove from blacklist
-      await redis.srem(`vc:blacklist:${message.author.id}`, targetId);
-      await redis.sadd(key, targetId);
-      if (voiceChannel && isOwner) {
-        try {
-          await voiceChannel.permissionOverwrites.edit(targetId, {
-            Connect: true,
-            ViewChannel: true,
-          });
-        } catch (error) {
-          console.error('Failed to set permissions on current channel:', error);
-        }
-      }
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(titleText, contentText, footerText);
+
       return message.reply({
-        embeds: [
-          new EmbedBuilder()
-            .setColor('#57F287')
-            .setTitle('✅ Whitelisted')
-            .setDescription(`✅ Added <@${targetId}> to your whitelist. They'll be able to join all your future VCs!`)
-            .setFooter({ text: 'OneTab - Voice management' }),
-        ],
+        flags: MessageFlags.IsComponentsV2,
+        components: [container]
       });
     }
 
-    if (sub === 'remove') {
-      let targetId = userMention?.id;
-      if (!targetId && args[1]) {
-        targetId = args[1];
-        if (!/^\d+$/.test(targetId)) {
+    // Validate arguments
+    if (args.length === 0) {
+      // === DISCORD COMPONENTS V2 USAGE PANEL ===
+      const titleText = new TextDisplayBuilder()
+        .setContent('# ❌ Usage Error');
+        
+      const contentText = new TextDisplayBuilder()
+        .setContent(`
+> **Please specify an action!**
+
+**Correct Usage:** \`.v whitelist <add|remove|list> [@user]\`
+
+**Examples:**
+• \`.v whitelist add @user\` - Add user to whitelist
+• \`.v whitelist remove @user\` - Remove user from whitelist
+• \`.v whitelist list\` - Show whitelisted users
+
+**What this does:**
+• Only whitelisted users can join your voice channels
+• Settings persist across all your channels
+        `);
+        
+      const footerText = new TextDisplayBuilder()
+        .setContent('OneTab - Voice management | Specify add, remove, or list');
+
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(titleText, contentText, footerText);
+
+      return message.reply({
+        flags: MessageFlags.IsComponentsV2,
+        components: [container]
+      });
+    }
+
+    const action = args[0].toLowerCase();
+    const userId = message.mentions.users.first()?.id;
+
+    if (action === 'list') {
+      try {
+        const whitelist = await redis.smembers(`whitelist:${message.author.id}`);
+        
+        if (whitelist.length === 0) {
+          // === DISCORD COMPONENTS V2 INFO PANEL ===
+          const titleText = new TextDisplayBuilder()
+            .setContent('# 📋 Whitelist Empty');
+            
+          const contentText = new TextDisplayBuilder()
+            .setContent(`
+> **Your whitelist is empty!**
+
+**Channel:** <#${voiceChannel.id}>
+
+**What this means:**
+• No users are currently whitelisted
+• Anyone can join your voice channels
+• You can add users with \`.v whitelist add @user\`
+            `);
+            
+          const footerText = new TextDisplayBuilder()
+            .setContent('OneTab - Voice management | No whitelisted users');
+
+          const container = new ContainerBuilder()
+            .addTextDisplayComponents(titleText, contentText, footerText);
+
           return message.reply({
-            embeds: [
-              new EmbedBuilder()
-                .setColor('#FF0000')
-                .setAuthor({ 
-  					name: 'late Night', 
- 					iconURL: 'https://cdn.discordapp.com/avatars/1395739396128378920/a_205db0dad201aa0645e8d9bffdac9a99.gif?size=1024'
-				})
-                .setDescription('⚠️ You must mention a user or provide their ID to remove.')
-                .setFooter({ text: 'Your whitelist applies to all VCs you create!' }),
-            ],
+            flags: MessageFlags.IsComponentsV2,
+            components: [container]
           });
         }
+
+        // === DISCORD COMPONENTS V2 SUCCESS PANEL ===
+        const titleText = new TextDisplayBuilder()
+          .setContent('# 📋 Whitelisted Users');
+          
+        const contentText = new TextDisplayBuilder()
+          .setContent(`
+> **Your whitelisted users (${whitelist.length}):**
+
+${whitelist.map(id => `• <@${id}>`).join('\n')}
+
+**What this means:**
+• Only these users can join your voice channels
+• Settings apply to all your channels
+• Remove users with \`.v whitelist remove @user\`
+          `);
+          
+        const footerText = new TextDisplayBuilder()
+          .setContent('OneTab - Voice management | Whitelist management');
+
+        const container = new ContainerBuilder()
+          .addTextDisplayComponents(titleText, contentText, footerText);
+
+        return message.reply({
+          flags: MessageFlags.IsComponentsV2,
+          components: [container]
+        });
+        
+      } catch (error) {
+        console.error('[WHITELIST] Error:', error);
+        
+        // === DISCORD COMPONENTS V2 ERROR PANEL ===
+        const titleText = new TextDisplayBuilder()
+          .setContent('# ❌ Error');
+          
+        const contentText = new TextDisplayBuilder()
+          .setContent(`
+> **Failed to get whitelist!**
+
+**Error:** ${error.message}
+
+**What to do:**
+• Try again in a few moments
+• Contact an administrator if the problem persists
+          `);
+          
+        const footerText = new TextDisplayBuilder()
+          .setContent('OneTab - Voice management | Error getting whitelist');
+
+        const container = new ContainerBuilder()
+          .addTextDisplayComponents(titleText, contentText, footerText);
+
+        return message.reply({
+          flags: MessageFlags.IsComponentsV2,
+          components: [container]
+        });
+      }
+    }
+
+    if (!userId) {
+      // === DISCORD COMPONENTS V2 USAGE PANEL ===
+      const titleText = new TextDisplayBuilder()
+        .setContent('# ❌ Usage Error');
+        
+      const contentText = new TextDisplayBuilder()
+        .setContent(`
+> **Please mention a user!**
+
+**Correct Usage:** \`.v whitelist ${action} @user\`
+
+**Examples:**
+• \`.v whitelist add @user\` - Add user to whitelist
+• \`.v whitelist remove @user\` - Remove user from whitelist
+
+**Note:** You must mention the user with @.
+        `);
+        
+      const footerText = new TextDisplayBuilder()
+        .setContent('OneTab - Voice management | Mention a user');
+
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(titleText, contentText, footerText);
+
+      return message.reply({
+        flags: MessageFlags.IsComponentsV2,
+        components: [container]
+      });
+    }
+
+    try {
+      if (action === 'add') {
+        await redis.sadd(`whitelist:${message.author.id}`, userId);
+        
+        // === DISCORD COMPONENTS V2 SUCCESS PANEL ===
+        const titleText = new TextDisplayBuilder()
+          .setContent('# ✅ User Whitelisted');
+          
+        const contentText = new TextDisplayBuilder()
+          .setContent(`
+> **User added to whitelist successfully!**
+
+**User:** <@${userId}>
+**Channel:** <#${voiceChannel.id}>
+
+**What happened:**
+• User can now join your voice channels
+• Setting applies to all your channels
+• Only whitelisted users can join
+
+**To remove:** Use \`.v whitelist remove @user\`
+          `);
+          
+        const footerText = new TextDisplayBuilder()
+          .setContent('OneTab - Voice management | User whitelisted');
+
+        const container = new ContainerBuilder()
+          .addTextDisplayComponents(titleText, contentText, footerText);
+
+        return message.reply({
+          flags: MessageFlags.IsComponentsV2,
+          components: [container]
+        });
+        
+      } else if (action === 'remove') {
+        await redis.srem(`whitelist:${message.author.id}`, userId);
+        
+        // === DISCORD COMPONENTS V2 SUCCESS PANEL ===
+        const titleText = new TextDisplayBuilder()
+          .setContent('# ✅ User Removed');
+          
+        const contentText = new TextDisplayBuilder()
+          .setContent(`
+> **User removed from whitelist successfully!**
+
+**User:** <@${userId}>
+**Channel:** <#${voiceChannel.id}>
+
+**What happened:**
+• User can no longer join your voice channels
+• Setting applies to all your channels
+• User is no longer whitelisted
+
+**To add back:** Use \`.v whitelist add @user\`
+          `);
+          
+        const footerText = new TextDisplayBuilder()
+          .setContent('OneTab - Voice management | User removed from whitelist');
+
+        const container = new ContainerBuilder()
+          .addTextDisplayComponents(titleText, contentText, footerText);
+
+        return message.reply({
+          flags: MessageFlags.IsComponentsV2,
+          components: [container]
+        });
+        
+      } else {
+        // === DISCORD COMPONENTS V2 USAGE PANEL ===
+        const titleText = new TextDisplayBuilder()
+          .setContent('# ❌ Invalid Action');
+          
+        const contentText = new TextDisplayBuilder()
+          .setContent(`
+> **Invalid action specified!**
+
+**Valid actions:** \`add\`, \`remove\`, \`list\`
+
+**Examples:**
+• \`.v whitelist add @user\` - Add user to whitelist
+• \`.v whitelist remove @user\` - Remove user from whitelist
+• \`.v whitelist list\` - Show whitelisted users
+          `);
+          
+        const footerText = new TextDisplayBuilder()
+          .setContent('OneTab - Voice management | Use add, remove, or list');
+
+        const container = new ContainerBuilder()
+          .addTextDisplayComponents(titleText, contentText, footerText);
+
+        return message.reply({
+          flags: MessageFlags.IsComponentsV2,
+          components: [container]
+        });
       }
       
-      if (!targetId)
-        return message.reply({
-          embeds: [
-            new EmbedBuilder()
-              .setColor('#FF0000')
-              .setTitle('Error')
-              .setDescription('⚠️ You must mention a user or provide their ID to remove.')
-              .setFooter({ text: 'Your whitelist applies to all VCs you create!' }),
-          ],
-        });
+    } catch (error) {
+      console.error('[WHITELIST] Error:', error);
+      
+      // === DISCORD COMPONENTS V2 ERROR PANEL ===
+      const titleText = new TextDisplayBuilder()
+        .setContent('# ❌ Error');
+        
+      const contentText = new TextDisplayBuilder()
+        .setContent(`
+> **Failed to manage whitelist!**
 
-      const isWhitelisted = await redis.sismember(key, targetId);
-      if (!isWhitelisted)
-        return message.reply({
-          embeds: [
-            new EmbedBuilder()
-              .setColor('#FF0000')
-              .setTitle('Error')
-              .setDescription(`⚠️ <@${targetId}> is not in your whitelist.`)
-              .setFooter({ text: 'Your whitelist applies to all VCs you create!' }),
-          ],
-        });
+**Error:** ${error.message}
 
-      await redis.srem(key, targetId);
+**What to do:**
+• Try again in a few moments
+• Contact an administrator if the problem persists
+        `);
+        
+      const footerText = new TextDisplayBuilder()
+        .setContent('OneTab - Voice management | Error managing whitelist');
 
-      if (voiceChannel && isOwner) {
-        try {
-          await voiceChannel.permissionOverwrites.delete(targetId);
-        } catch (error) {
-          console.error('Failed to remove permissions from current channel:', error);
-        }
-      }
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(titleText, contentText, footerText);
 
       return message.reply({
-        embeds: [
-          new EmbedBuilder()
-            .setColor('#00FF00')
-            .setTitle('Success')
-            .setDescription(`✅ Removed <@${targetId}> from your whitelist.`)
-            .setFooter({ text: 'Your whitelist applies to all VCs you create!' }),
-        ],
+        flags: MessageFlags.IsComponentsV2,
+        components: [container]
       });
     }
-
-    if (sub === 'list') {
-      const ids = await redis.smembers(key);
-      if (!ids.length) return message.reply({
-        embeds: [
-          new EmbedBuilder()
-            .setColor('#FF0000')
-            .setTitle('Error')
-            .setDescription('⚠️ Your whitelist is empty.')
-            .setFooter({ text: 'Your whitelist applies to all VCs you create!' }),
-        ],
-      });
-
-      const names = await Promise.all(
-        ids.map(async (id) => {
-          try {
-            const member = await message.guild.members.fetch(id);
-            return member.user.tag;
-          } catch {
-            return `❓ Unknown User (${id})`;
-          }
-        })
-      );
-
-      return message.reply({
-        embeds: [
-          new EmbedBuilder()
-            .setColor('#00FF00')
-            .setTitle('Success')
-            .setDescription(`📄 Your whitelisted users (applies to all your VCs):\n${names.join('\n')}`)
-            .setFooter({ text: 'Your whitelist applies to all VCs you create!' }),
-        ],
-      });
-    }
-
-    if (sub === 'clear') {
-      const ids = await redis.smembers(key);
-      if (!ids.length) return message.reply({
-        embeds: [
-          new EmbedBuilder()
-            .setColor('#FEE75C')
-            .setTitle('ℹ️ Whitelist Empty')
-            .setDescription('⚠️ Your whitelist is already empty.')
-            .setFooter({ text: 'OneTab - Voice management' }),
-        ],
-      });
-
-      if (voiceChannel && isOwner) {
-        for (const id of ids) {
-          try {
-            await voiceChannel.permissionOverwrites.delete(id);
-          } catch {
-            // Ignore
-          }
-        }
-      }
-
-      await redis.del(key);
-      return message.reply({
-        embeds: [
-          new EmbedBuilder()
-            .setColor('#57F287')
-            .setTitle('✅ Whitelist Cleared')
-            .setDescription('🗑️ Cleared your whitelist. This affects all future VCs you create.')
-            .setFooter({ text: 'OneTab - Voice management' }),
-        ],
-      });
-    }
-
-    // Default help message
-    return message.reply({
-      embeds: [
-        new EmbedBuilder()
-          .setColor('#FEE75C')
-          .setTitle('ℹ️ Usage')
-          .setDescription('❓ Usage: `.v whitelist <add|remove|list|clear> [@user or ID]`')
-          .setFooter({ text: 'OneTab - Voice management' }),
-      ],
-    });
   }
 };

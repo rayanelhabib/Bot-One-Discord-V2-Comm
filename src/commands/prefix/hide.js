@@ -1,103 +1,196 @@
-const { redis } = require('../../redisClient');
-const { PermissionFlagsBits, EmbedBuilder } = require('discord.js');
+const { 
+  EmbedBuilder, 
+  PermissionFlagsBits,
+  TextDisplayBuilder,
+  ContainerBuilder,
+  MessageFlags,
+  SectionBuilder,
+  ThumbnailBuilder,
+  SeparatorBuilder
+} = require('discord.js');
 
 module.exports = {
   name: 'hide',
-  description: 'Hide the voice channel from non-members',
+  description: 'Hide your voice channel from other users',
   usage: '.v hide',
-  async execute(message) {
+  async execute(message, args, client) {
+    const { isOwnerOrManager } = require('../../utils/voiceHelper');
+    const { redis } = require('../../redisClient');
+    
     const voiceChannel = message.member.voice.channel;
-    if (!voiceChannel) return message.reply({ embeds: [
-      new EmbedBuilder()
-        .setAuthor({ 
-  			name: 'Paul Dev 🍷', 
- 			iconURL: 'https://cdn.discordapp.com/attachments/1384655500183998587/1412132681705066526/Picsart_25-08-22_01-59-42-726.jpg'
-		})
-        .setDescription(`⚠️ <@${message.author.id}> Join a voice channel first!`)
-        .setColor('#ED4245')
-    ] });
+    if (!voiceChannel) {
+      // === DISCORD COMPONENTS V2 ERROR PANEL ===
+      const titleText = new TextDisplayBuilder()
+        .setContent('# ⚠️ Voice Channel Required');
+        
+      const contentText = new TextDisplayBuilder()
+        .setContent(`
+> **You must be in a voice channel to hide it!**
 
+**What to do:**
+• Join any voice channel in this server
+• Make sure you're connected to voice
+• Then use the hide command again
+
+**Usage:** \`.v hide\`
+        `);
+        
+      const footerText = new TextDisplayBuilder()
+        .setContent('OneTab - Voice management | Join a voice channel to continue');
+
+      // Section avec thumbnail d'erreur
+      const errorSection = new SectionBuilder()
+        .addTextDisplayComponents(titleText, contentText, footerText)
+        .setThumbnailAccessory(
+          thumbnail => thumbnail
+            .setDescription('Error - Voice Channel Required')
+            .setURL('https://cdn.discordapp.com/attachments/1406646913201209374/1414178170378125383/telechargement_2.gif')
+        );
+
+      const separator = new SeparatorBuilder().setDivider(true);
+      const container = new ContainerBuilder()
+        .addSectionComponents(errorSection)
+        .addSeparatorComponents(separator);
+
+      return message.reply({
+        flags: MessageFlags.IsComponentsV2,
+        components: [container]
+      });
+    }
+
+    // Check premium access (PREMIUM ONLY - NO EXCEPTIONS)
     const premiumManager = require('../../utils/premiumManager');
     const hasPremium = await premiumManager.hasPremiumAccess(message.guild.id, message.author.id);
     
-
-    
     if (!hasPremium) {
-      return message.reply({ embeds: [
-        new EmbedBuilder()
-          .setAuthor({ 
-  				name: 'Paul Dev 🍷', 
- 				iconURL: 'https://cdn.discordapp.com/attachments/1384655500183998587/1412132681705066526/Picsart_25-08-22_01-59-42-726.jpg'
-			})
-          .setDescription(`⚠️ <@${message.author.id}> This is a **premium feature**! Only users with premium access can use this command.\n\n💎 Ask an administrator to give you premium access with: `)
-          .setColor('#FEE75C')
-          
-      ] });
+      // === DISCORD COMPONENTS V2 PREMIUM PANEL ===
+      const titleText = new TextDisplayBuilder()
+        .setContent('# 💎 Premium Feature Required');
+        
+      const contentText = new TextDisplayBuilder()
+        .setContent(`
+> **<@${message.author.id}> This is a premium feature!**
+> **Only users with premium access can hide voice channels.**
+> **💎 Ask an administrator to give you premium access**
+
+**What you can do:**
+• Contact an administrator for premium access
+• Use other voice channel features
+• Create your own voice channel
+        `);
+        
+      const footerText = new TextDisplayBuilder()
+        .setContent('OneTab - Voice management | Premium access required');
+
+      // Section avec thumbnail premium
+      const premiumSection = new SectionBuilder()
+        .addTextDisplayComponents(titleText, contentText, footerText)
+        .setThumbnailAccessory(
+          thumbnail => thumbnail
+            .setDescription('Premium Feature - Hide Channel')
+            .setURL('https://cdn.discordapp.com/attachments/1406646913201209374/1414178170378125383/telechargement_2.gif')
+        );
+
+      const separator = new SeparatorBuilder().setDivider(true);
+      const container = new ContainerBuilder()
+        .addSectionComponents(premiumSection)
+        .addSeparatorComponents(separator);
+
+      return message.reply({
+        flags: MessageFlags.IsComponentsV2,
+        components: [container]
+      });
     }
 
-    const isHidden = await redis.get(`hidden:${voiceChannel.id}`) === '1';
-    if (isHidden) {
-      return message.reply({ embeds: [
-        new EmbedBuilder()
-          .setAuthor({ 
-  				name: 'Paul Dev 🍷', 
- 				iconURL: 'https://cdn.discordapp.com/attachments/1384655500183998587/1412132681705066526/Picsart_25-08-22_01-59-42-726.jpg'
-			})
-          .setDescription(`⚠️<@${message.author.id}> This channel is already hidden.`)
-          .setColor('#FEE75C')
-          
-      ] });
-    }
-    
-    const everyoneRole = message.guild.roles.everyone;
     try {
-      // Get current permissions to preserve Connect state
-      const currentOverwrites = voiceChannel.permissionOverwrites.cache.get(everyoneRole.id);
-      const currentConnect = currentOverwrites ? currentOverwrites.deny.has(PermissionFlagsBits.Connect) : false;
+      // Hide the channel by removing view permissions
+      await voiceChannel.permissionOverwrites.edit(voiceChannel.guild.roles.everyone, {
+        ViewChannel: false
+      });
+
+      // Store hidden state in Redis
+      await redis.set(`hidden:${voiceChannel.id}`, 'true');
+
+      // === DISCORD COMPONENTS V2 SUCCESS PANEL ===
+      const titleText = new TextDisplayBuilder()
+        .setContent('# ✅ Channel Hidden Successfully');
+        
+      const contentText = new TextDisplayBuilder()
+        .setContent(`
+> **Voice channel hidden successfully!**
+
+**Channel:** <#${voiceChannel.id}>
+
+**What happened:**
+• Channel is now hidden from other users
+• Only channel members can see it
+• Setting will be saved automatically
+
+**To show the channel again:** Use \`.v unhide\`
+        `);
+        
+      const footerText = new TextDisplayBuilder()
+        .setContent('OneTab - Voice management | Channel hidden successfully');
+
+      // Section avec thumbnail de succès
+      const successSection = new SectionBuilder()
+        .addTextDisplayComponents(titleText, contentText, footerText)
+        .setThumbnailAccessory(
+          thumbnail => thumbnail
+            .setDescription('Success - Channel Hidden')
+            .setURL('https://cdn.discordapp.com/attachments/1406646913201209374/1414178170378125383/telechargement_2.gif')
+        );
+
+      const separator = new SeparatorBuilder().setDivider(true);
+      const container = new ContainerBuilder()
+        .addSectionComponents(successSection)
+        .addSeparatorComponents(separator);
+
+      return message.reply({
+        flags: MessageFlags.IsComponentsV2,
+        components: [container]
+      });
       
-      // Save current lock state before hiding
-      const isLocked = await redis.get(`locked:${voiceChannel.id}`) === '1';
-      if (isLocked) {
-        await redis.set(`hidden_lock_state:${voiceChannel.id}`, '1', 'EX', 86400); // 24 hours
-      }
+    } catch (error) {
+      console.error('[HIDE] Error:', error);
       
-      // Get the actual owner of the channel
-      const ownerId = await redis.get(`creator:${voiceChannel.id}`);
-      
-      await Promise.all([
-        voiceChannel.permissionOverwrites.edit(everyoneRole, {
-          ViewChannel: false,
-          Connect: currentConnect // Preserve current Connect state
-        }),
-        voiceChannel.permissionOverwrites.edit(ownerId, {
-          ViewChannel: true,
-          Connect: true
-        }),
-        redis.set(`hidden:${voiceChannel.id}`, '1')
-      ]);
-      
-      message.reply({ embeds: [
-        new EmbedBuilder()
-          .setAuthor({ 
-  			name: 'Paul Dev 🍷', 
- 			iconURL: 'https://cdn.discordapp.com/attachments/1384655500183998587/1412132681705066526/Picsart_25-08-22_01-59-42-726.jpg'
-		  })
-          .setDescription(`✅ <@${message.author.id}>Channel is now hidden from others.`)
-          .setColor('#57F287')
-          .setFooter({ text: 'OneTab - Voice management' })
-      ] });
-    } catch (err) {
-      console.error(err);
-      message.reply({ embeds: [
-        new EmbedBuilder()
-          .setAuthor({ 
-  				name: 'Paul Dev 🍷', 
- 				iconURL: 'https://cdn.discordapp.com/attachments/1384655500183998587/1412132681705066526/Picsart_25-08-22_01-59-42-726.jpg'
-			})
-          .setDescription(`⚠️<@${message.author.id}> Failed to hide the channel.`)
-          .setColor('#ED4245')
-          .setFooter({ text: 'OneTab - Voice management' })
-      ] });
+      // === DISCORD COMPONENTS V2 ERROR PANEL ===
+      const titleText = new TextDisplayBuilder()
+        .setContent('# ❌ Hide Failed');
+        
+      const contentText = new TextDisplayBuilder()
+        .setContent(`
+> **Failed to hide the voice channel!**
+
+**Error:** ${error.message}
+
+**What to do:**
+• Check if the bot has permission to manage the channel
+• Try again in a few moments
+• Contact an administrator if the problem persists
+        `);
+        
+      const footerText = new TextDisplayBuilder()
+        .setContent('OneTab - Voice management | Error hiding channel');
+
+      // Section avec thumbnail d'erreur
+      const errorSection = new SectionBuilder()
+        .addTextDisplayComponents(titleText, contentText, footerText)
+        .setThumbnailAccessory(
+          thumbnail => thumbnail
+            .setDescription('Error - Hide Failed')
+            .setURL('https://cdn.discordapp.com/attachments/1406646913201209374/1414178170378125383/telechargement_2.gif')
+        );
+
+      const separator = new SeparatorBuilder().setDivider(true);
+      const container = new ContainerBuilder()
+        .addSectionComponents(errorSection)
+        .addSeparatorComponents(separator);
+
+      return message.reply({
+        flags: MessageFlags.IsComponentsV2,
+        components: [container]
+      });
     }
   }
 };

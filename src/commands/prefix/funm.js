@@ -1,84 +1,149 @@
-const { redis } = require('../../redisClient');
-const { EmbedBuilder } = require('discord.js');
-const { isOwnerOrManager } = require('../../utils/voiceHelper');
+const { 
+  EmbedBuilder, 
+  PermissionFlagsBits,
+  TextDisplayBuilder,
+  ContainerBuilder,
+  MessageFlags
+} = require('discord.js');
 
 module.exports = {
   name: 'funm',
   description: 'Unmute all users in your voice channel',
   usage: '.v funm',
   async execute(message) {
+    const { isOwnerOrManager } = require('../../utils/voiceHelper');
+    const { redis } = require('../../redisClient');
+    
     const voiceChannel = message.member.voice.channel;
-    if (!voiceChannel) return message.reply({ embeds: [new EmbedBuilder().setAuthor({ 
-  				name: 'Paul Dev 🍷', 
- 				iconURL: 'https://cdn.discordapp.com/attachments/1384655500183998587/1412132681705066526/Picsart_25-08-22_01-59-42-726.jpg'
-			})
-        .setDescription(`⚠️ <@${message.author.id}> Join a voice channel first!`)
-        .setColor('#5865F2')
-    ] });
+    if (!voiceChannel) {
+      // === DISCORD COMPONENTS V2 ERROR PANEL ===
+      const titleText = new TextDisplayBuilder()
+        .setContent('# ⚠️ Voice Channel Required');
+        
+      const contentText = new TextDisplayBuilder()
+        .setContent(`
+> **You must be in a voice channel to unmute users!**
 
-    // Verify ownership or manager status
-    const hasPermission = await isOwnerOrManager(voiceChannel.id, message.author.id);
-    if (!hasPermission) {
-      return message.reply({ embeds: [new EmbedBuilder()
-        .setAuthor({ 
-  				name: 'Paul Dev 🍷', 
- 				iconURL: 'https://cdn.discordapp.com/attachments/1384655500183998587/1412132681705066526/Picsart_25-08-22_01-59-42-726.jpg'
-			})
-        .setDescription(`⚠️ <@${message.author.id}> Only the channel owner or managers can use this command!`)
-        .setColor('#FEE75C')
-    ] });
+**What to do:**
+• Join any voice channel in this server
+• Make sure you're connected to voice
+• Then use the unmute command again
+
+**Usage:** \`.v funm\`
+        `);
+        
+      const footerText = new TextDisplayBuilder()
+        .setContent('OneTab - Voice management | Join a voice channel to continue');
+
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(titleText, contentText, footerText);
+
+      return message.reply({
+        flags: MessageFlags.IsComponentsV2,
+        components: [container]
+      });
     }
 
-    // Remove mutes from all members (including the invoker)
-    const membersToUnmute = voiceChannel.members;
-    
-    if (membersToUnmute.size === 0) {
-      return message.reply({ embeds: [new EmbedBuilder()
-        .setAuthor({ 
-  				name: 'Paul Dev 🍷', 
- 				iconURL: 'https://cdn.discordapp.com/attachments/1384655500183998587/1412132681705066526/Picsart_25-08-22_01-59-42-726.jpg'
-			})
-        .setDescription(`⚠️ <@${message.author.id}> Aucun membre dans le salon.`)
-        .setColor('#FEE75C')
-      ] });
+    // Check ownership or manager status
+    const hasPermission = await isOwnerOrManager(voiceChannel.id, message.author.id);
+    if (!hasPermission) {
+      // === DISCORD COMPONENTS V2 PERMISSION PANEL ===
+      const titleText = new TextDisplayBuilder()
+        .setContent('# ⚠️ Permission Denied');
+        
+      const contentText = new TextDisplayBuilder()
+        .setContent(`
+> **Only the channel owner or managers can unmute users!**
+
+**Who can unmute users:**
+• Channel owner (creator)
+• Channel managers (co-owners)
+
+**What you can do:**
+• Ask the channel owner to unmute users
+• Become a manager of this channel
+• Create your own voice channel
+        `);
+        
+      const footerText = new TextDisplayBuilder()
+        .setContent('OneTab - Voice management | Owner/manager access required');
+
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(titleText, contentText, footerText);
+
+      return message.reply({
+        flags: MessageFlags.IsComponentsV2,
+        components: [container]
+      });
     }
 
     try {
-      // Reset channel permissions to allow speaking (channel-specific only)
+      // Remove mute state from Redis
+      await redis.del(`mute_state:${voiceChannel.id}`);
+
+      // Restore channel permissions to allow everyone to speak
       await voiceChannel.permissionOverwrites.edit(voiceChannel.guild.roles.everyone, {
         Speak: null
       });
+
+      // === DISCORD COMPONENTS V2 SUCCESS PANEL ===
+      const titleText = new TextDisplayBuilder()
+        .setContent('# ✅ Success');
+        
+      const contentText = new TextDisplayBuilder()
+        .setContent(`
+> **Successfully unmuted users in the voice channel!**
+
+**Channel:** <#${voiceChannel.id}>
+
+**What happened:**
+• All users in the channel can now speak
+• Mute state has been removed
+• New users joining will not be automatically muted
+
+**To mute users again:** Use \`.v fm\`
+        `);
+        
+      const footerText = new TextDisplayBuilder()
+        .setContent('OneTab - Voice management | Users unmuted successfully');
+
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(titleText, contentText, footerText);
+
+      return message.reply({
+        flags: MessageFlags.IsComponentsV2,
+        components: [container]
+      });
       
-      // Remove individual mute permissions for all members
-      for (const [memberId, member] of membersToUnmute) {
-        try {
-          await voiceChannel.permissionOverwrites.delete(member);
-        } catch (error) {
-          console.error(`[FUNM] Failed to remove permissions for ${member.user.username}:`, error.message);
-        }
-      }
+    } catch (err) {
+      console.error(err);
       
-      // Clear mute state to disable auto-mute
-      await redis.del(`mute_state:${voiceChannel.id}`);
-      
-      message.reply({ embeds: [new EmbedBuilder()
-        .setAuthor({ 
-  				name: 'Paul Dev 🍷', 
- 				iconURL: 'https://cdn.discordapp.com/attachments/1384655500183998587/1412132681705066526/Picsart_25-08-22_01-59-42-726.jpg'
-			})
-          .setDescription(`✅ <@${message.author.id}> ${membersToUnmute.size} utilisateur(s) ont été démuté(s) dans <#${voiceChannel.id}>. `)
-          .setColor('#5865F2')
-      ] });
-    } catch (error) {
-      console.error('[FUNM] Error:', error);
-      message.reply({ embeds: [new EmbedBuilder()
-        .setAuthor({ 
-  				name: 'Paul Dev 🍷', 
- 				iconURL: 'https://cdn.discordapp.com/attachments/1384655500183998587/1412132681705066526/Picsart_25-08-22_01-59-42-726.jpg'
-			})
-          .setDescription(`⚠️ <@${message.author.id}> Erreur lors du démutage. Vérifiez les permissions du bot.`)
-          .setColor('#ED4245')
-      ] });
+      // === DISCORD COMPONENTS V2 ERROR PANEL ===
+      const titleText = new TextDisplayBuilder()
+        .setContent('# ❌ Error');
+        
+      const contentText = new TextDisplayBuilder()
+        .setContent(`
+> **Failed to unmute users in the voice channel!**
+
+**Error:** ${err.message}
+
+**What to do:**
+• Check if the bot has permission to manage voice states
+• Try again in a few moments
+• Contact an administrator if the problem persists
+        `);
+        
+      const footerText = new TextDisplayBuilder()
+        .setContent('OneTab - Voice management | Error unmuting users');
+
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(titleText, contentText, footerText);
+
+      return message.reply({
+        flags: MessageFlags.IsComponentsV2,
+        components: [container]
+      });
     }
   }
 };

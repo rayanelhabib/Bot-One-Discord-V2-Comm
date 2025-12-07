@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test EJS</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: #00ff88;
+            padding: 50px;
+            text-align: center;
+        }
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 Test EJS Fonctionnel !</h1>
+    <p>Si vous voyez ce message, EJS fonctionne correctement.</p>
+    <p>Date actuelle : <%= new Date().toLocaleString('fr-FR') %></p>
+    <p>Variable test : <%= title || 'Pas de titre' %></p>
+    <a href="/" style="color: #00ff88; text-decoration: none; font-size: 1.1rem;">← Retour à l'accueil</a>
+</body>
+</html>

@@ -1,5 +1,19 @@
 const { redis } = require('../../redisClient');
-const { EmbedBuilder } = require('discord.js');
+const { 
+  EmbedBuilder, 
+  PermissionFlagsBits,
+  TextDisplayBuilder,
+  ContainerBuilder,
+  MessageFlags,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  ModalBuilder,
+  TextInputBuilder,
+  TextInputStyle,
+  StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder
+} = require('discord.js');
 
 module.exports = {
   name: 'reset',
@@ -12,14 +26,48 @@ module.exports = {
     // Verify ownership
     const creatorId = await redis.get(`creator:${voiceChannel.id}`);
     if (creatorId !== message.author.id) {
-      return message.reply({ embeds: [new EmbedBuilder().setTitle('Erreur').setDescription('⚠️ Only the channel owner can reset it!').setColor('#5865F2')] });
+      
+      // === DISCORD COMPONENTS V2 PANEL ===
+      const titleText = new TextDisplayBuilder()
+        .setContent('# ℹ️ Erreur');
+        
+      const contentText = new TextDisplayBuilder()
+        .setContent(`> **⚠️ Only the channel owner can reset it!**`);
+        
+      const footerText = new TextDisplayBuilder()
+        .setContent('OneTab - Voice management');
+
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(titleText, contentText, footerText);
+
+      return message.reply({
+        flags: MessageFlags.IsComponentsV2,
+        components: [container]
+      });
     }
 
     // Check cooldown (5 minutes = 300 seconds)
     const cooldownKey = `reset_cooldown:${voiceChannel.id}:${creatorId}`;
     const cooldown = await redis.get(cooldownKey);
     if (cooldown) {
-      return message.reply({ embeds: [new EmbedBuilder().setTitle('Cooldown').setDescription('⏳ You can reset your channel only once every 5 minutes. Please wait.').setColor('#5865F2')] });
+      
+      // === DISCORD COMPONENTS V2 PANEL ===
+      const titleText = new TextDisplayBuilder()
+        .setContent('# ℹ️ Cooldown');
+        
+      const contentText = new TextDisplayBuilder()
+        .setContent(`> **⏳ You can reset your channel only once every 5 minutes. Please wait.**`);
+        
+      const footerText = new TextDisplayBuilder()
+        .setContent('OneTab - Voice management');
+
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(titleText, contentText, footerText);
+
+      return message.reply({
+        flags: MessageFlags.IsComponentsV2,
+        components: [container]
+      });
     }
 
     try {
