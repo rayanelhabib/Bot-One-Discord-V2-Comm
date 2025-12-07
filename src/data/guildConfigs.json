@@ -1,0 +1,12 @@
+{
+  "1376993662793285672": {
+    "createChannelName": "・Join To Create",
+    "createChannelId": "1409235651832057939",
+    "tempChannelCategory": "1409235593518645279",
+    "tempChannelCategoryId": "1409235593518645279",
+    "autoDeleteEmpty": true,
+    "allowRenaming": true,
+    "defaultUserLimit": 0,
+    "prefix": ".v"
+  }
+}

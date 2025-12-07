@@ -1,0 +1,12 @@
+{
+  "1376993662793285672": {
+    "createChannelName": "MAKE ROOM LAT",
+    "createChannelId": "1401668672233279549",
+    "tempChannelCategory": "1376993663808442388",
+    "tempChannelCategoryId": null,
+    "autoDeleteEmpty": true,
+    "allowRenaming": true,
+    "defaultUserLimit": 0,
+    "prefix": ".v"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "1376993662793285672": {
+    "createChannelName": "make your room",
+    "createChannelId": "1408867167193137213",
+    "tempChannelCategory": "1406651506987499520",
+    "tempChannelCategoryId": "1406651506987499520",
+    "autoDeleteEmpty": true,
+    "allowRenaming": true,
+    "defaultUserLimit": 0,
+    "prefix": ".v"
+  }
+}

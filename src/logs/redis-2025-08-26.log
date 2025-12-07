@@ -1,0 +1,2 @@
+{"timestamp":"2025-08-26T12:13:44.967Z","level":"INFO","category":"redis","message":"Redis client connected successfully","error":null,"context":{"category":"redis"},"processId":26412,"memoryUsage":{"rss":68124672,"heapTotal":33832960,"heapUsed":17988272,"external":3422543,"arrayBuffers":147897}}
+{"timestamp":"2025-08-26T12:13:44.975Z","level":"INFO","category":"redis","message":"Redis client ready","error":null,"context":{"category":"redis"},"processId":26412,"memoryUsage":{"rss":68194304,"heapTotal":33832960,"heapUsed":18083000,"external":3424525,"arrayBuffers":149839}}

@@ -1,0 +1,1 @@
+{"timestamp":"2025-08-04T10:15:51.961Z","level":"INFO","category":"config_validation","message":"Configuration validated successfully","error":null,"context":{"category":"config_validation"},"processId":13200,"memoryUsage":{"rss":72777728,"heapTotal":34095104,"heapUsed":18470104,"external":3558922,"arrayBuffers":153164}}

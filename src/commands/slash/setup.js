@@ -1,0 +1,97 @@
+const { SlashCommandBuilder, ChannelType, PermissionsBitField } = require('discord.js');
+const { updateGuildConfig, getGuildConfig } = require('../../utils/configManager');
+
+module.exports = {
+  data: new SlashCommandBuilder()
+    .setName('setup')
+    .setDescription('Set up the temporary voice channel system')
+    .addStringOption(option =>
+      option.setName('create-channel-name')
+        .setDescription('Name of the channel users will join to create temp channels')
+        .setRequired(true))
+    .addChannelOption(option =>
+      option.setName('category')
+        .setDescription('Category to create temporary voice channels in')
+        .addChannelTypes(ChannelType.GuildCategory)
+        .setRequired(true)),
+
+  async execute(interaction) {
+    try {
+      console.log(`[SETUP] Commande setup exécutée par ${interaction.user.tag} dans ${interaction.guild.name}`);
+      
+      if (!interaction.member.permissions.has(PermissionsBitField.Flags.ManageGuild)) {
+        console.log(`[SETUP] Permission refusée pour ${interaction.user.tag}`);
+        return interaction.reply({
+          content: '❌ You need the **Manage Server** permission to use this command.',
+          ephemeral: true
+        });
+      }
+
+      const guild = interaction.guild;
+      const channelName = interaction.options.getString('create-channel-name');
+      const category = interaction.options.getChannel('category');
+      
+      console.log(`[SETUP] Paramètres reçus:`);
+      console.log(`[SETUP] - Nom du salon: ${channelName}`);
+      console.log(`[SETUP] - Catégorie: ${category.name} (${category.id})`);
+      console.log(`[SETUP] - Type de catégorie: ${category.type}`);
+
+      if (!category || category.type !== ChannelType.GuildCategory) {
+        console.log(`[SETUP] ❌ Catégorie invalide`);
+        return interaction.reply({
+          content: '❌ Please select a valid category for temporary voice channels.',
+          ephemeral: true
+        });
+      }
+
+      const prevConfig = await getGuildConfig(guild.id);
+      console.log(`[SETUP] Config précédente:`, prevConfig);
+
+      // Crée toujours un nouveau salon vocal dans la catégorie sélectionnée
+      let createChannel;
+      try {
+        console.log(`[SETUP] Création du salon vocal...`);
+        createChannel = await guild.channels.create({
+          name: channelName,
+          type: ChannelType.GuildVoice,
+          parent: category.id,
+          permissionOverwrites: [{
+            id: guild.roles.everyone,
+            allow: [PermissionsBitField.Flags.Connect],
+          }]
+        });
+        console.log(`[SETUP] ✅ Salon créé: ${createChannel.name} (${createChannel.id})`);
+      } catch (error) {
+        console.error(`[SETUP] ❌ Erreur création salon:`, error);
+        return interaction.reply({
+          content: '❌ Failed to create voice channel. Please check bot permissions.',
+          ephemeral: true
+        });
+      }
+
+      const newConfig = {
+        createChannelName: createChannel.name,
+        createChannelId: createChannel.id,
+        tempChannelCategory: category.id
+      };
+
+      console.log(`[SETUP] Sauvegarde de la config...`);
+      const updatedConfig = await updateGuildConfig(guild.id, newConfig);
+      console.log(`[SETUP] ✅ Config sauvegardée:`, updatedConfig);
+
+      await interaction.reply({
+        content: `✅ **Setup Complete!**\n\n**Configuration:**\n• **Creation Channel:** <#${createChannel.id}>\n• **Category:** <#${category.id}>\n• **Channel Name:** ${createChannel.name}\n\nUsers can now join <#${createChannel.id}> to create temporary voice channels.`,
+        ephemeral: true
+      });
+      
+      console.log(`[SETUP] ✅ Setup terminé avec succès pour ${guild.name}`);
+      
+    } catch (error) {
+      console.error(`[SETUP] ❌ Erreur critique:`, error);
+      await interaction.reply({
+        content: '❌ An unexpected error occurred. Please try again.',
+        ephemeral: true
+      }).catch(() => {});
+    }
+  }
+};
